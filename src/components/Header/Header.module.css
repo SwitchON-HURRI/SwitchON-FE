@@ -1,0 +1,86 @@
+.header {
+  height: 118px;
+  display: flex;
+  flex-direction: column;
+}
+
+.topContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.date {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4c4c4c;
+}
+
+.iconContainer {
+  display: flex;
+  gap: 12px;
+}
+
+.icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon::before {
+  content: "";
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  background-color: #f1f0ec;
+  border-radius: 8px;
+  z-index: -1;
+  opacity: 0;
+  transition: 0.1s;
+}
+
+.icon:active::before {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .icon:hover::before {
+    opacity: 1;
+  }
+}
+
+.navBar {
+  display: flex;
+  justify-content: center;
+  gap: 13px;
+  margin-top: auto;
+}
+
+.navItem {
+  width: 62px;
+  height: 38px;
+  font-weight: bold;
+  border: 1px solid #c1c1c1;
+  border-radius: 20px;
+  color: #4c4c4c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
+
+.navItem:hover {
+  border-color: #f1f0ec;
+  background-color: #f1f0ec;
+  transition: 0.1s;
+}
+
+.navItemActive {
+  border-color: #f1f0ec;
+  background-color: #f1f0ec;
+}
