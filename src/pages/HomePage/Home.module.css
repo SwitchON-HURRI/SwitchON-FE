@@ -26,7 +26,7 @@
   position: relative;
   width: 280px;
   height: 280px;
-  background-image: url("../../assets/icon/default-ring.svg");
+  background-image: url("../../assets/default-ring.svg");
   background-repeat: no-repeat;
   background-position: center;
 }

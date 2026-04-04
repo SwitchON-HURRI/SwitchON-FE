@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "../../components/Header/Header.jsx";
 import styles from "./Home.module.css";
-import switchBtn from "../../assets/icon/switch.svg";
+import switchBtn from "../../assets/switch.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 
 export default function Home() {
