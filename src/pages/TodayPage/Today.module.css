@@ -1,0 +1,63 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  padding-top: 25px;
+  padding-bottom: 50px;
+}
+
+.ringWrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border: 1px solid #cecece;
+}
+
+.switchBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.stopBtn {
+  position: absolute;
+  right: 0;
+}
+
+.addBtn {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.manageBtn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.addScheduleBox {
+  display: flex;
+  width: 347px;
+  padding: 30px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 33px;
+  border: 1px dashed #bbb;
+  box-sizing: border-box;
+}
+
+.addScheduleBox span {
+  color: #000;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
