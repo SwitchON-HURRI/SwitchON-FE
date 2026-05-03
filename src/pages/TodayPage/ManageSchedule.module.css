@@ -1,0 +1,96 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 23px;
+  padding-top: 23px;
+  padding-bottom: 50px;
+}
+
+.pageTitleWrapper {
+  display: flex;
+  width: 353px;
+  height: 39px;
+  padding: 3px 10px;
+  align-items: center;
+  gap: 30px;
+  border-radius: 20px;
+  background: #f2f2f2;
+  box-sizing: border-box;
+}
+
+.categoryWrapper {
+  display: flex;
+  width: 155px;
+  padding: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  align-self: stretch;
+  border-radius: 15px 15px 0 0;
+  box-sizing: border-box;
+}
+
+.categoryName {
+  display: flex;
+  width: 135px;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 19px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.categoryName span {
+  color: #000;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.categoryDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.scheduleListContainer {
+  display: flex;
+  padding: 10px 8px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 11px;
+  border-radius: 0 0 15px 15px;
+}
+
+.scheduleListContainer img {
+  margin-top: 11px;
+  align-self: center;
+}
+
+.scheduleItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.scheduleItem span {
+  color: #000;
+  font-size: 12px;
+  font-weight: 300;
+  border-radius: 10px;
+  background: #fff;
+  padding: 3px 10px;
+}
+
+.cardListContainer {
+  padding-left: 28.5px;
+  padding-right: 28.5px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 28px;
+  column-gap: 45px;
+}
+
