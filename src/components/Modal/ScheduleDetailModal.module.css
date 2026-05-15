@@ -1,0 +1,160 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(114, 114, 114, 0.47);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scheduleCard {
+  display: flex;
+  width: 347px;
+  padding: 30px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.itemContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  width: 100%;
+}
+
+.topContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.firstLineContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.firstLineContainer span {
+  color: #000;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.category {
+  display: flex;
+  padding: 5px 10px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 19px;
+  background: #fff;
+}
+
+.category span {
+  color: #000;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.categoryDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.importance {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.importanceDotActive {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: #4c4c4c;
+}
+
+.importanceDotInactive {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: #fff;
+}
+
+.edit {
+  color: #a5a5a5;
+  font-size: 12px;
+  text-decoration-line: underline;
+  text-underline-position: from-font;
+}
+
+.detailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detailContainer img {
+  width: 11px;
+  height: 11px;
+}
+
+.detailContainer span {
+  color: #000;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.detailItemWrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.desBox {
+  display: flex;
+  padding: 10px;
+  gap: 10px;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.desBox span {
+  min-height: 30px;
+  color: #4c4c4c;
+  font-size: 11px;
+  font-weight: 300;
+}
+
+.addBtn {
+  box-sizing: border-box;
+  display: flex;
+  width: 140px;
+  height: 30px;
+  padding: 3px 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  border: 0.5px solid #c1c1c1;
+  background: #fff;
+}
+
+.addBtn img {
+  width: 9px;
+  height: 9px;
+}
+
+.addBtn span {
+  color: #4c4c4c;
+  font-size: 12px;
+  font-weight: 300;
+}
