@@ -3,7 +3,7 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Today from "./pages/Today.jsx";
 import Weekly from "./pages/Weekly.jsx";
-import Monthly from "./pages/Monthly.jsx";
+import Monthly from "./pages/MonthlyPage/Monthly.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import Notice from "./pages/Notice.jsx";
 import Setting from "./pages/Setting.jsx";

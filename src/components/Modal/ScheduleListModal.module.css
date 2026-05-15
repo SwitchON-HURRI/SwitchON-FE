@@ -1,0 +1,72 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(114, 114, 114, 0.47);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  padding: 20px;
+  margin: 0 50px;
+  width: 100%;
+  flex-direction: column;
+  gap: 29px;
+
+  border-radius: 15px;
+  border: 1px solid #c1c1c1;
+  background: #fff;
+}
+
+.topContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.iconContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.date {
+  color: #000;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-radius: 5px;
+  border: 1px solid #c1c1c1;
+  background: #fff;
+}
+
+.scheduleText {
+  color: #4c4c4c;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.categoryDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
