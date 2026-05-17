@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home.jsx";
+import Home from "./pages/HomePage/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Today from "./pages/TodayPage/Today.jsx";
 import ManageSchedule from "./pages/TodayPage/ManageSchedule.jsx";
