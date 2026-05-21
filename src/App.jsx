@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
+import Login from "./pages/LoginPage/Login.jsx";
 import Today from "./pages/Today.jsx";
 import Weekly from "./pages/Weekly.jsx";
 import Monthly from "./pages/Monthly.jsx";
