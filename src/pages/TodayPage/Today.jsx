@@ -9,18 +9,39 @@ import manageBtn from "../../assets/icon/manage.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ScheduleCard from "../../components/ScheduleCard/ScheduleCard.jsx";
 import AddEditScheduleModal from "../../components/Modal/AddEditScheduleModal.jsx";
+import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
+import Ring from "../../components/Ring/Ring.jsx";
 
 export default function Today() {
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [confirmModalText, setConfirmModalText] = useState("");
+
+  const schedules = [
+    { category: "study" },
+    { category: "work" },
+    { category: "meeting" },
+    { category: "exercise" },
+  ];
+
+  const handleRingWrapperClick = (event) => {
+    if (event.target.className === styles.switchBtn) {
+      setConfirmModalText("오늘 하루를 종료하시겠습니까?");
+    }
+
+    if (event.target.className === styles.stopBtn) {
+      setConfirmModalText("일정을 정지하시겠습니까?");
+    }
+  };
+
   return (
     <>
       <Header />
       <div className={styles.container}>
         <SelectedState selected="선택한 값" />
-        {/* 임시 사각형 */}
-        <div className={styles.ringWrapper}>
+        <div className={styles.ringWrapper} onClick={handleRingWrapperClick}>
+          <Ring className={styles.ring} schedules={schedules}/>
           <img className={styles.switchBtn} src={switchBtn} alt="스위치 버튼" />
           <img className={styles.stopBtn} src={stopBtn} alt="일정 정지 버튼" />
           <img
@@ -39,10 +60,11 @@ export default function Today() {
           />
         </div>
         <div className={styles.scheduleList}>
+          {schedules.length > 0 && (
           <ScheduleCard
             isFixed={true}
             title="일정 제목!"
-            category={{ name: "운동", color: "#D4E4F1" }}
+            category={{ name: schedules[0]?.category || "카테고리", color: "#D4E4F1" }}
             importance={3}
             date="2026-04-05"
             time="14:00-16:00"
@@ -50,6 +72,7 @@ export default function Today() {
             des="설명설명설명"
             onEdit={() => setIsEditModalOpen(true)}
           />
+          )}
           <div
             className={styles.addScheduleBox}
             onClick={() => setIsAddModalOpen(true)}
@@ -71,6 +94,13 @@ export default function Today() {
             mode="edit"
             onClose={() => setIsEditModalOpen(false)}
           ></AddEditScheduleModal>
+        )}
+        {confirmModalText && (
+          <ConfirmModal
+            onClose={() => setConfirmModalText("")}
+            onConfirm={() => setConfirmModalText("")}
+            text={confirmModalText}
+          />
         )}
       </div>
     </>
