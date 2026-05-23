@@ -6,10 +6,12 @@ import backArrow from "../../assets/icon/back-arrow.svg";
 import moreArrow from "../../assets/icon/more-arrow.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ScheduleDetailModal from "../../components/Modal/ScheduleDetailModal.jsx";
+import AddEditScheduleModal from "../../components/Modal/AddEditScheduleModal.jsx";
 
 export default function ManageSchedule() {
   const navigate = useNavigate();
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const dummySchedule = {
     isFixed: false,
@@ -56,15 +58,13 @@ export default function ManageSchedule() {
               style={{ backgroundColor: "#F5ECEE" }}
             >
               <div className={styles.scheduleItem}>
-                <span>스위치온 개발</span>
+                <span onClick={() => setIsDetailModalOpen(true)}>
+                  스위치온 개발
+                </span>
                 <span>선물 포장</span>
                 <span>꿀잠 자기</span>
               </div>
-              <img
-                src={moreArrow}
-                alt="더보기"
-                onClick={() => setIsDetailOpen(true)}
-              />
+              <img src={moreArrow} alt="더보기" />
             </div>
           </div>
 
@@ -120,11 +120,17 @@ export default function ManageSchedule() {
             </div>
           </div>
         </div>
-        {isDetailOpen && (
+        {isDetailModalOpen && (
           <ScheduleDetailModal
             {...dummySchedule}
-            onEdit={() => setIsDetailOpen(false)}
-            onClose={() => setIsDetailOpen(false)}
+            onEdit={() => setIsEditModalOpen(true)}
+            onClose={() => setIsDetailModalOpen(false)}
+          />
+        )}
+        {isEditModalOpen && (
+          <AddEditScheduleModal
+            mode="edit"
+            onClose={() => setIsEditModalOpen(false)}
           />
         )}
       </div>

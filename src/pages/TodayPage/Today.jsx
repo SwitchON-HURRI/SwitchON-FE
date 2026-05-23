@@ -8,9 +8,11 @@ import addBtn from "../../assets/icon/add.svg";
 import manageBtn from "../../assets/icon/manage.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ScheduleCard from "../../components/ScheduleCard/ScheduleCard.jsx";
+import AddEditScheduleModal from "../../components/Modal/AddEditScheduleModal.jsx";
 
 export default function Today() {
   const navigate = useNavigate();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   return (
     <>
@@ -21,7 +23,12 @@ export default function Today() {
         <div className={styles.ringWrapper}>
           <img className={styles.switchBtn} src={switchBtn} alt="스위치 버튼" />
           <img className={styles.stopBtn} src={stopBtn} alt="일정 정지 버튼" />
-          <img className={styles.addBtn} src={addBtn} alt="일정 추가 버튼" />
+          <img
+            className={styles.addBtn}
+            src={addBtn}
+            alt="일정 추가 버튼"
+            onClick={() => setIsAddModalOpen(true)}
+          />
           <img
             className={styles.manageBtn}
             src={manageBtn}
@@ -43,13 +50,28 @@ export default function Today() {
             des="설명설명설명"
             onEdit={() => setIsEditModalOpen(true)}
           />
-          <div className={styles.addScheduleBox}>
+          <div
+            className={styles.addScheduleBox}
+            onClick={() => setIsAddModalOpen(true)}
+          >
             <span>
               +<br />
               일정을 추가하세요
             </span>
           </div>
         </div>
+
+        {isAddModalOpen && (
+          <AddEditScheduleModal
+            onClose={() => setIsAddModalOpen(false)}
+          ></AddEditScheduleModal>
+        )}
+        {isEditModalOpen && (
+          <AddEditScheduleModal
+            mode="edit"
+            onClose={() => setIsEditModalOpen(false)}
+          ></AddEditScheduleModal>
+        )}
       </div>
     </>
   );

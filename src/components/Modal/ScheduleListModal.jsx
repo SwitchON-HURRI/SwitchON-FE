@@ -4,12 +4,11 @@ import filter from "../../assets/icon/filter.svg";
 import add from "../../assets/icon/add-2.svg";
 import ScheduleDetailModal from "./ScheduleDetailModal.jsx";
 
-export default function Modal({ date, onClose }) {
+export default function ScheduleListModal({ date, onClose }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [eventData, setEventData] = useState([]);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const today = new Date();
-  const formattedDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+  const selectedDate = date ? new Date(date) : new Date();
+  const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const dummySchedule = {
     isFixed: false,
@@ -41,7 +40,10 @@ export default function Modal({ date, onClose }) {
           </div>
         </div>
         <div className={styles.scheduleList}>
-          <div className={styles.scheduleItem} onClick={() => setIsDetailOpen(true)}>
+          <div
+            className={styles.scheduleItem}
+            onClick={() => setIsDetailModalOpen(true)}
+          >
             <span className={styles.scheduleText}>오픽 공부하기</span>
             <div
               className={styles.categoryDot}
@@ -64,11 +66,11 @@ export default function Modal({ date, onClose }) {
           </div>
         </div>
       </div>
-      {isDetailOpen && (
+      {isDetailModalOpen && (
         <ScheduleDetailModal
           {...dummySchedule}
-          onEdit={() => setIsDetailOpen(false)}
-          onClose={() => setIsDetailOpen(false)}
+          onEdit={() => setIsDetailModalOpen(false)}
+          onClose={() => setIsDetailModalOpen(false)}
         />
       )}
     </div>

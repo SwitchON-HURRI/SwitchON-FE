@@ -6,6 +6,7 @@ import dateIcon from "../../assets/icon/date.svg";
 import timeIcon from "../../assets/icon/time.svg";
 import addIcon from "../../assets/icon/add-3.svg";
 import ConfirmModal from "./ConfirmModal.jsx";
+import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
 export default function ScheduleDetailModal({
   isFixed,
