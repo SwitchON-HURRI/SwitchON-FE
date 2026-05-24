@@ -1,0 +1,368 @@
+/* 글로벌 색상 및 폰트 변수 설정 */
+:root {
+  --color-bg-main: #FFFFFF;
+  --color-bg-active: #F1F0EC;
+  --color-border-light: #E2E2E2;
+  --color-border-dark: #C1C1C1;
+  --color-text-primary: #000000;
+  --color-text-secondary: #4C4C4C;
+  --font-family: 'Pretendard', sans-serif;
+}
+
+/* Root: 주간 화면 */
+.weekly-root {
+  width: 412px;
+  background-color: var(--color-bg-main);
+  position: relative;
+  font-family: var(--font-family);
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding-bottom: 40px; /* 여백 확보 */
+}
+
+/* Frame 187 (Container) */
+.frame-187 {
+  width: 402px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  margin: 20px auto 0;
+  box-sizing: border-box;
+}
+
+/* LNB (Navigation Tabs) */
+.lnb {
+  width: 307px;
+  height: 38px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.tab {
+  height: 38px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+.tab-today { width: 62px; background-color: var(--color-bg-active); border: none; }
+.tab-week { width: 63px; border: 1px solid var(--color-border-dark); }
+.tab-month { width: 63px; border: 1px solid var(--color-border-dark); }
+.tab-social { width: 80px; border: 1px solid var(--color-border-dark); }
+
+/* Main Content Area */
+.main {
+  width: 352px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* ---------------- 캘린더 영역 ---------------- */
+.calendar-strip {
+  width: 100%;
+  border: 1px solid var(--color-border-light);
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.week-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.calendar-divider {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--color-text-primary); /* 이미지에서 명확하고 짙은 선 */
+  margin: 0 0 8px 0;
+}
+
+.days-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.day-wrapper {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.day {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  z-index: 1;
+}
+
+.day-highlight {
+  color: var(--color-text-secondary);
+}
+
+/* 날짜 배경 (원형/링) */
+.day-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* 활성화 된 날짜 (오늘) */
+.day-bg.active {
+  background-color: var(--color-bg-active);
+}
+
+/* 임시 링 스타일 (실제 SVG가 있다면 SVG로 대체) */
+.day-bg.ring-1 { border: 3px solid #E4D5E6; border-left-color: transparent; }
+.day-bg.ring-2 { border: 3px solid #F3E5D4; border-bottom-color: transparent; }
+.day-bg.ring-3 { border: 3px solid #F3E5D4; border-top-color: transparent; }
+
+
+/* ---------------- 태스크 리스트 영역 ---------------- */
+.task-container {
+  width: 100%;
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 30px;
+  padding: 30px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.task-header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+
+
+.task-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.task-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* ... 기존 스타일 내용 유지 ... */
+
+.task-item {
+  width: 100%;
+  height: 44px;
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  cursor: pointer; /* 클릭 가능한 요소임을 나타냄 */
+  transition: background-color 0.2s ease;
+}
+
+.task-item:active {
+  background-color: #f9f9f9;
+}
+
+/* ==========================================
+   모달 (Modal) & 오버레이 스타일 
+   ========================================== */
+.modal-overlay {
+  position: fixed; /* .weekly-root 컨테이너 기준 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* 어두운 뒷배경 (Dim 처리) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100; /* 화면 최상단 */
+}
+
+.modal-container {
+  width: 347px;
+  background-color: #CFD6C6;
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 명세의 Frame 구조들을 간소화하여 Gap으로 정렬 */
+  box-sizing: border-box;
+}
+
+/* 모달 상단부 (카테고리, 타이틀, 진행도, 수정텍스트) */
+.modal-top {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-title-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.modal-category {
+  background-color: #FFFFFF;
+  border-radius: 19px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: #000000;
+}
+
+.modal-category-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #B9C7B2; /* 피그마 캡쳐 기준 연두색 도트 */
+}
+
+.modal-task-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+/* 진행도 도트 Row */
+.modal-progress-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.progress-dot-dark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #4C4C4C;
+}
+
+.progress-dot-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+}
+
+.modal-edit-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  color: #A5A5A5;
+  cursor: pointer;
+}
+
+/* 오늘 일정에 추가 버튼 */
+.modal-add-btn {
+  width: 140px;
+  height: 30px;
+  background-color: #FFFFFF;
+  border: 0.5px solid #C1C1C1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: #4C4C4C;
+  cursor: pointer;
+}
+
+/* 위치 및 날짜 리스트 */
+.modal-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modal-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: #000000;
+}
+
+/* 메모 영역 */
+.modal-memo-box {
+  width: 100%;
+  background-color: #EFF3E9;
+  border-radius: 5px;
+  padding: 15px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #4C4C4C;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
