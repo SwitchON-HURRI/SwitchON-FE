@@ -256,3 +256,169 @@
   height: 34px;
   box-sizing: border-box;
 }
+
+/* --- 기존 CSS 내용은 그대로 유지 --- */
+
+/* --- 카테고리 편집 팝오버 (수정됨) --- */
+.edit-popover {
+  /* 툴팁 모양을 위한 스타일 수정 */
+  border-radius: 10px 30px 30px 30px;
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+
+  /* 기존 레이아웃 유지 */
+  width: 197px;
+  height: 81px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 17px 20px 15px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.edit-title {
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.edit-input-wrapper {
+  width: 163px;
+  height: 25px;
+  border: 1px solid #E2E2E2;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+  box-sizing: border-box;
+}
+
+.edit-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  color: #4C4C4C; /* 실제 입력되는 텍스트 색상 */
+  width: 100%;
+}
+
+.edit-input::placeholder {
+  color: #D7D7D7; /* placeholder 색상 (피그마 명세 적용) */
+}
+
+/* --- 카테고리 색상 변경 팝오버 --- */
+.color-popover {
+  border-radius: 10px 30px 30px 30px; /* 물방울 툴팁 모양 */
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  
+  width: 197px;
+  height: 72px; /* 명세 크기 반영 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 20px 19px 15px; /* 명세 여백 반영 */
+  box-sizing: border-box;
+}
+
+.color-palette {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.color-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.color-circle:active {
+  transform: scale(0.85); /* 클릭할 때 살짝 눌리는 시각 효과 */
+}
+
+.small-dots-wrapper {
+  display: flex;
+  gap: 2px;
+}
+
+.small-dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: #D7D7D7;
+}
+
+/* --- 카테고리 추가 팝오버 --- */
+.add-popover {
+  width: 337px;
+  height: 76px;
+  background-color: #FFFFFF;
+  border-radius: 30px;
+  box-shadow: 4px 4px 10px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 15px 29px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.add-title {
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.add-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%; /* 부모의 padding 영역을 제외한 가로 전체를 차지하도록 */
+}
+
+.add-input-wrapper {
+  width: 257px;
+  height: 25px;
+  border: 1px solid #E2E2E2;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+  box-sizing: border-box;
+}
+
+.add-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  color: #4C4C4C;
+  width: 100%;
+}
+
+.add-input::placeholder {
+  color: #D7D7D7;
+}
