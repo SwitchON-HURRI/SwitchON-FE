@@ -1,4 +1,3 @@
-/* 글로벌 색상 및 폰트 변수 설정 */
 :root {
   --color-bg-main: #FFFFFF;
   --color-bg-active: #F1F0EC;
@@ -17,7 +16,7 @@
   font-family: var(--font-family);
   margin: 0 auto;
   box-sizing: border-box;
-  padding-bottom: 40px; /* 여백 확보 */
+  padding-bottom: 40px; 
 }
 
 /* Frame 187 (Container) */
@@ -100,7 +99,7 @@
 .calendar-divider {
   width: 100%;
   border: none;
-  border-top: 1px solid var(--color-text-primary); /* 이미지에서 명확하고 짙은 선 */
+  border-top: 1px solid var(--color-text-primary); 
   margin: 0 0 8px 0;
 }
 
@@ -130,7 +129,6 @@
   color: var(--color-text-secondary);
 }
 
-/* 날짜 배경 (원형/링) */
 .day-bg {
   position: absolute;
   top: 0;
@@ -141,12 +139,7 @@
   box-sizing: border-box;
 }
 
-/* 활성화 된 날짜 (오늘) */
-.day-bg.active {
-  background-color: var(--color-bg-active);
-}
-
-/* 임시 링 스타일 (실제 SVG가 있다면 SVG로 대체) */
+.day-bg.active { background-color: var(--color-bg-active); }
 .day-bg.ring-1 { border: 3px solid #E4D5E6; border-left-color: transparent; }
 .day-bg.ring-2 { border: 3px solid #F3E5D4; border-bottom-color: transparent; }
 .day-bg.ring-3 { border: 3px solid #F3E5D4; border-top-color: transparent; }
@@ -176,7 +169,6 @@
   display: flex;
   gap: 16px;
   align-items: center;
-  cursor: pointer;
 }
 
 .task-list {
@@ -186,7 +178,24 @@
   width: 100%;
 }
 
+.task-item {
+  width: 100%;
+  height: 44px;
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
+.task-item:active {
+  background-color: #f9f9f9;
+}
 
 .task-text {
   font-size: 12px;
@@ -200,66 +209,33 @@
   border-radius: 50%;
 }
 
-/* ... 기존 스타일 내용 유지 ... */
-
-.task-item {
-  width: 100%;
-  height: 44px;
-  background-color: var(--color-bg-main);
-  border: 1px solid var(--color-border-dark);
-  border-radius: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px;
-  box-sizing: border-box;
-  cursor: pointer; /* 클릭 가능한 요소임을 나타냄 */
-  transition: background-color 0.2s ease;
-}
-
-.task-item:active {
-  background-color: #f9f9f9;
-}
 
 /* ==========================================
-   모달 (Modal) & 오버레이 스타일 
+   1. 할일 모달 (Task Modal)
    ========================================== */
 .modal-overlay {
-  position: fixed; /* .weekly-root 컨테이너 기준 */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4); /* 어두운 뒷배경 (Dim 처리) */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100; /* 화면 최상단 */
+  z-index: 9999; 
 }
 
 .modal-container {
   width: 347px;
-  background-color: #CFD6C6;
   border-radius: 20px;
   padding: 30px;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* 명세의 Frame 구조들을 간소화하여 Gap으로 정렬 */
+  gap: 16px; 
   box-sizing: border-box;
 }
 
-/* 모달 상단부 (카테고리, 타이틀, 진행도, 수정텍스트) */
-.modal-top {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.modal-title-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+.modal-top { display: flex; flex-direction: column; gap: 12px; }
+.modal-title-row { display: flex; gap: 12px; align-items: center; }
 
 .modal-category {
   background-color: #FFFFFF;
@@ -274,50 +250,13 @@
   color: #000000;
 }
 
-.modal-category-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #B9C7B2; /* 피그마 캡쳐 기준 연두색 도트 */
-}
+.modal-category-dot { width: 12px; height: 12px; border-radius: 50%; }
+.modal-task-title { font-size: 15px; font-weight: 700; color: #000000; margin: 0; }
+.modal-progress-dots { display: flex; gap: 6px; align-items: center; }
+.progress-dot-dark { width: 8px; height: 8px; border-radius: 50%; background-color: #4C4C4C; }
+.progress-dot-light { width: 8px; height: 8px; border-radius: 50%; background-color: #FFFFFF; }
+.modal-edit-text { font-size: 12px; color: #A5A5A5; cursor: pointer; }
 
-.modal-task-title {
-  font-family: 'Pretendard', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #000000;
-  margin: 0;
-}
-
-/* 진행도 도트 Row */
-.modal-progress-dots {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.progress-dot-dark {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #4C4C4C;
-}
-
-.progress-dot-light {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #FFFFFF;
-}
-
-.modal-edit-text {
-  font-family: 'Pretendard', sans-serif;
-  font-size: 12px;
-  color: #A5A5A5;
-  cursor: pointer;
-}
-
-/* 오늘 일정에 추가 버튼 */
 .modal-add-btn {
   width: 140px;
   height: 30px;
@@ -335,34 +274,144 @@
   cursor: pointer;
 }
 
-/* 위치 및 날짜 리스트 */
-.modal-info-list {
+.modal-info-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.modal-info-row { display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 300; color: #000000; }
+.modal-memo-box { width: 100%; background-color: #EFF3E9; border-radius: 5px; padding: 15px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 300; color: #4C4C4C; box-sizing: border-box; margin-top: 4px; }
+
+
+/* ==========================================
+   2. 하단 필터 모달 (Filter Bottom Sheet)
+   ========================================== */
+.filter-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* 하단에 붙게 처리 */
+  z-index: 9999;
+}
+
+.filter-bottom-sheet {
+  width: 412px; /* 모바일 기준 너비 맞춤 */
+  background-color: #FFFFFF;
+  border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
+  align-items: center;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden; 
 }
 
-.modal-info-row {
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.filter-drag-handle {
+  width: 84px;
+  height: 4px;
+  background-color: #D9D9D9; 
+  border-radius: 2px;
+  margin-top: 15px;
+}
+
+.filter-content {
+  width: 100%;
+  padding: 24px 45px 40px 45px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.filter-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-subtitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-option-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 300;
-  color: #000000;
+  gap: 20px;
+  cursor: pointer;
 }
 
-/* 메모 영역 */
-.modal-memo-box {
-  width: 100%;
-  background-color: #EFF3E9;
-  border-radius: 5px;
-  padding: 15px;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 300;
-  color: #4C4C4C;
+.filter-option-row span {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+/* 라디오 버튼 커스텀 스타일 */
+.radio-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   box-sizing: border-box;
-  margin-top: 4px;
+  transition: all 0.2s ease;
+}
+
+.radio-active {
+  border: 2px solid var(--color-text-secondary); /* 선택 시 굵은 보더 */
+}
+
+.radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-text-secondary);
+}
+
+/* 하단 취소 / 선택 버튼 영역 */
+.filter-action-buttons {
+  display: flex;
+  width: 100%;
+}
+
+.filter-btn-cancel,
+.filter-btn-select {
+  display: flex;
+  flex: 1; /* 남은 영역을 1:1로 정확하게 양분 */
+  height: 45px;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.filter-btn-cancel {
+  background: #F2F2F2;
+  color: var(--color-text-secondary);
+}
+
+.filter-btn-select {
+  background: var(--color-text-secondary);
+  color: #FFFFFF;
 }
