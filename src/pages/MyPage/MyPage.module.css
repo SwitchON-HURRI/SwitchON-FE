@@ -257,17 +257,12 @@
   box-sizing: border-box;
 }
 
-/* --- 기존 CSS 내용은 그대로 유지 --- */
-
-/* --- 카테고리 편집 팝오버 (수정됨) --- */
+/* --- 카테고리 편집 팝오버 --- */
 .edit-popover {
-  /* 툴팁 모양을 위한 스타일 수정 */
   border-radius: 10px 30px 30px 30px;
   border: 1px solid #D7D7D7;
   background: #FFF;
   box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
-
-  /* 기존 레이아웃 유지 */
   width: 197px;
   height: 81px;
   display: flex;
@@ -279,6 +274,13 @@
   align-items: flex-start;
 }
 
+.edit-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .edit-title {
   font-family: "Pretendard", -apple-system, sans-serif;
   font-size: 12px;
@@ -286,6 +288,15 @@
   line-height: 14px;
   color: #4C4C4C;
   margin: 0;
+}
+
+.edit-delete-btn {
+  color: #C1C1C1;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px; /* 명세에 따라 작게 표현 */
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .edit-input-wrapper {
@@ -307,27 +318,26 @@
   font-size: 10px;
   font-weight: 700;
   line-height: 12px;
-  color: #4C4C4C; /* 실제 입력되는 텍스트 색상 */
+  color: #4C4C4C;
   width: 100%;
 }
 
 .edit-input::placeholder {
-  color: #D7D7D7; /* placeholder 색상 (피그마 명세 적용) */
+  color: #D7D7D7; 
 }
 
 /* --- 카테고리 색상 변경 팝오버 --- */
 .color-popover {
-  border-radius: 10px 30px 30px 30px; /* 물방울 툴팁 모양 */
+  border-radius: 10px 30px 30px 30px; 
   border: 1px solid #D7D7D7;
   background: #FFF;
   box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
-  
   width: 197px;
-  height: 72px; /* 명세 크기 반영 */
+  height: 72px; 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px 20px 19px 15px; /* 명세 여백 반영 */
+  padding: 12px 20px 19px 15px; 
   box-sizing: border-box;
 }
 
@@ -347,7 +357,7 @@
 }
 
 .color-circle:active {
-  transform: scale(0.85); /* 클릭할 때 살짝 눌리는 시각 효과 */
+  transform: scale(0.85); 
 }
 
 .small-dots-wrapper {
@@ -393,7 +403,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  width: 100%; /* 부모의 padding 영역을 제외한 가로 전체를 차지하도록 */
+  width: 100%; 
 }
 
 .add-input-wrapper {
@@ -421,4 +431,113 @@
 
 .add-input::placeholder {
   color: #D7D7D7;
+}
+
+/* --- 카테고리 추가 팝오버 내 색상 선택 관련 --- */
+.add-color-selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-color-palette-popover {
+  position: absolute;
+  bottom: 24px; 
+  left: -5px; 
+  border-radius: 30px 30px 30px 10px; 
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  padding: 10px 15px; 
+  display: flex;
+  align-items: center;
+  z-index: 1001;
+  white-space: nowrap; 
+}
+
+.color-palette-simple {
+  display: flex;
+  align-items: center;
+  gap: 12px; 
+}
+
+/* =========================================================
+   카테고리 삭제 확인 모달 CSS 추가 
+   ========================================================= */
+
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); /* 화면 전체를 어둡게 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* 팝오버보다 위에 뜨도록 높게 설정 */
+}
+
+.delete-modal-container {
+  display: flex;
+  width: 204px;
+  height: 76px;
+  padding: 15px 29px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  border-radius: 30px;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  box-sizing: border-box; /* 패딩 포함 높이 유지 */
+}
+
+.delete-modal-title {
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.delete-btn-row {
+  display: flex;
+  gap: 8px; /* 버튼 간격 */
+}
+
+.cancel-btn {
+  display: flex;
+  padding: 6px 11px 7px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  border: 1px solid #E2E2E2;
+  background: transparent;
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.confirm-delete-btn {
+  display: flex;
+  padding: 6px 11px 7px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  border: none;
+  background: #4C4C4C;
+  color: #D7D7D7;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
 }

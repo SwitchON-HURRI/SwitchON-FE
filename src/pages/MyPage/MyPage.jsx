@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import Header from "../../components/Header/Header.jsx";
+import { useNavigate } from 'react-router-dom';
 import styles from './MyPage.module.css';
 
-// 명세에 지정된 색상 Ellipse를 위한 임의의 팔레트 (상수 처리)
-const COLOR_PALETTE = ['#F4C4C9', '#D4E8B5', '#97A9DE', '#F4D485', '#D9D9D9', '#F29481', '#CADAB6'];
+// 업데이트된 공통 색상 팔레트
+const COLOR_PALETTE = ['#EEDBDF', '#F4ECC8', '#DADADC', '#D4E4F1', '#CFD6C6', '#DBD4DC', '#F2DBCD'];
 
-const MyPage = () => {
+const mockCategories = [
+  { id: 1, name: '집안일', color: '#F4C4C9' },
+  { id: 2, name: '회사', color: '#D4E8B5' },
+  { id: 3, name: '식단', color: '#97A9DE' },
+  { id: 4, name: '운동', color: '#F4D485' },
+  { id: 5, name: '공부', color: '#D9D9D9' },
+];
+
+export default function MyPage() {
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState(null);
   const [categories, setCategories] = useState([]);
   const [summaryData, setSummaryData] = useState({
     conditions: { regular: 0, comfort: 0, hard: 0 },
@@ -28,55 +39,102 @@ const MyPage = () => {
   const [isAddPopoverOpen, setIsAddPopoverOpen] = useState(false);
   const [addPopoverStyle, setAddPopoverStyle] = useState({});
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryColor, setNewCategoryColor] = useState(COLOR_PALETTE[2]);
   const addPopoverRef = useRef(null);
+
+  // --- 카테고리 추가 내 '색상 선택 팝오버' 상태 ---
+  const [isAddColorPaletteOpen, setIsAddColorPaletteOpen] = useState(false);
+  const addColorPaletteRef = useRef(null);
+
+  // --- 카테고리 삭제 모달 관련 상태 ---
+  const [deletingCategoryId, setDeletingCategoryId] = useState(null);
 
   useEffect(() => {
     const fetchMyPageData = async () => {
+      setIsLoading(true);
+      
+      const token = localStorage.getItem('accessToken');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // 1. 현재 사용자 조회
       try {
-        setIsLoading(true);
-        const mockResponse = {
-          categories: [
-            { id: 1, name: '집안일', color: '#F4C4C9' },
-            { id: 2, name: '회사', color: '#D4E8B5' },
-            { id: 3, name: '식단', color: '#97A9DE' },
-            { id: 4, name: '운동', color: '#F4D485' },
-            { id: 5, name: '공부', color: '#D9D9D9' },
-          ],
-          summary: {
-            conditions: { regular: 2, comfort: 3, hard: 1 },
-            switchDays: [false, false, false, false, true, false, false], 
-            goalDays: [false, false, false, false, false, false, false]
+        const userRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/auth/me`, {
+          method: 'GET',
+          headers
+        });
+        
+        if (!userRes.ok) {
+          if (userRes.status === 401 || userRes.status === 403) {
+            alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+            localStorage.removeItem('accessToken');
+            window.location.href = '/login';
+            return;
           }
-        };
-        setCategories(mockResponse.categories);
-        setSummaryData(mockResponse.summary);
+          throw new Error("User API Network Error");
+        }
+        
+        const userData = await userRes.json();
+        setUserInfo(userData);
       } catch (error) {
-        console.error('데이터를 불러오는데 실패했습니다.', error);
-      } finally {
-        setIsLoading(false);
+        console.error("User API Fetch Failed", error);
       }
+
+      // 2. 카테고리 전체 조회
+      try {
+        const categoryRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/read`, {
+          method: 'GET',
+          headers
+        });
+        
+        if (!categoryRes.ok) throw new Error("Category API Network Error");
+        
+        const categoryData = await categoryRes.json();
+        const formattedCategories = categoryData.map(cat => ({
+          id: cat.categoryId,
+          name: cat.categoryName,
+          color: cat.categoryColor,
+        }));
+        setCategories(formattedCategories || []);
+      } catch (error) {
+        console.error("Category API Fetch Failed, loading Mock Data", error);
+        setCategories(mockCategories);
+      }
+
+      // TODO: 주간 요약 데이터 API 연동 위치 (현재는 정적 데이터)
+      setSummaryData({
+        conditions: { regular: 2, comfort: 3, hard: 1 },
+        switchDays: [false, false, false, false, true, false, false], 
+        goalDays: [false, false, false, false, false, false, false]
+      });
+
+      setIsLoading(false);
     };
+
     fetchMyPageData();
   }, []);
 
   // 외부 클릭 시 모든 팝오버 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // 이름 변경 팝오버 닫기
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
         setEditingCategoryId(null);
       }
-      // 색상 변경 팝오버 닫기
       if (colorPopoverRef.current && !colorPopoverRef.current.contains(event.target)) {
         setEditingColorCategoryId(null);
       }
-      // 카테고리 추가 팝오버 닫기
       if (addPopoverRef.current && !addPopoverRef.current.contains(event.target)) {
         setIsAddPopoverOpen(false);
+        setIsAddColorPaletteOpen(false);
+      }
+      if (addColorPaletteRef.current && !addColorPaletteRef.current.contains(event.target)) {
+        setIsAddColorPaletteOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside); // 모바일 터치 대응
+    document.addEventListener('touchstart', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
@@ -85,7 +143,6 @@ const MyPage = () => {
 
   // --- 이벤트 핸들러 ---
   
-  // 1. 이름 변경 팝오버 오픈
   const handleCategoryRowClick = (e, id) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const popoverHeight = 81; 
@@ -102,13 +159,12 @@ const MyPage = () => {
       zIndex: 1000,
     });
     setEditingCategoryId(id);
-    setEditingColorCategoryId(null); // 다른 팝오버는 닫기
+    setEditingColorCategoryId(null);
     setIsAddPopoverOpen(false);
   };
 
-  // 2. 색상 변경 팝오버 오픈
   const handleColorDotClick = (e, id) => {
-    e.stopPropagation(); // 로우 클릭 이벤트로 전파 방지
+    e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
     const popoverHeight = 72; 
     const spaceBelow = window.innerHeight - rect.bottom;
@@ -125,16 +181,14 @@ const MyPage = () => {
     });
     
     setEditingColorCategoryId(id);
-    setEditingCategoryId(null); // 다른 팝오버는 닫기
+    setEditingCategoryId(null);
     setIsAddPopoverOpen(false);
   };
 
-  // 3. 카테고리 추가 팝오버 오픈
   const handleAddCategory = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const popoverHeight = 76; 
     
-    // 버튼의 바로 위쪽에 화면 너비 기준 중앙 정렬로 배치
     setAddPopoverStyle({
       position: 'fixed',
       top: `${rect.top - popoverHeight - 8}px`,
@@ -145,12 +199,13 @@ const MyPage = () => {
     
     setIsAddPopoverOpen(true);
     setNewCategoryName('');
+    setNewCategoryColor(COLOR_PALETTE[2]);
+    setIsAddColorPaletteOpen(false);
     
-    setEditingCategoryId(null); // 다른 팝오버는 닫기
+    setEditingCategoryId(null);
     setEditingColorCategoryId(null);
   };
 
-  // 4. 이름 실시간 반영
   const handleNameChange = (e, id) => {
     const newName = e.target.value;
     setCategories((prev) => 
@@ -158,27 +213,143 @@ const MyPage = () => {
     );
   };
 
-  // 5. 색상 변경 반영
-  const handleColorSelect = (id, newColor) => {
+  const handleNameKeyDown = async (e, id, currentName) => {
+    if (e.key === 'Enter') {
+      setEditingCategoryId(null); 
+      
+      const token = localStorage.getItem('accessToken');
+      try {
+        const res = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/update/name`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            categoryId: id,
+            categoryName: currentName
+          }),
+        });
+        
+        if (!res.ok) throw new Error("Category Name Update API Network Error");
+      } catch (error) {
+        console.error('Category Name Update Failed', error);
+      }
+    }
+  };
+
+  const handleColorSelect = async (id, newColor) => {
     setCategories((prev) => 
       prev.map(cat => cat.id === id ? { ...cat, color: newColor } : cat)
     );
     setEditingColorCategoryId(null); 
+
+    const token = localStorage.getItem('accessToken');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/update/color`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          categoryId: id,
+          categoryColor: newColor
+        }),
+      });
+      
+      if (!res.ok) throw new Error("Category Color Update API Network Error");
+    } catch (error) {
+      console.error('Category Color Update Failed', error);
+    }
   };
 
-  // 6. 새 카테고리 등록 처리 (엔터 키 입력 시 회색 고정 등록)
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     if (e.key === 'Enter') {
       if (newCategoryName.trim() === '') return; 
+      
+      const token = localStorage.getItem('accessToken');
+      
+      try {
+        const createRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/create`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            categoryName: newCategoryName,
+            categoryColor: newCategoryColor
+          }),
+        });
 
-      // 고유 ID 생성을 위해 현재 리스트 중 최고 ID값 + 1 계산
-      const newId = categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+        if (!createRes.ok) throw new Error("Category Create API Network Error");
+
+        setIsAddPopoverOpen(false);
+        setNewCategoryName('');
+        setNewCategoryColor(COLOR_PALETTE[2]);
+
+        const readRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/read`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (readRes.ok) {
+          const categoryData = await readRes.json();
+          const formattedCategories = categoryData.map(cat => ({
+            id: cat.categoryId,
+            name: cat.categoryName,
+            color: cat.categoryColor,
+          }));
+          setCategories(formattedCategories || []);
+        }
+
+      } catch (error) {
+        console.error('Category Creation or Fetch Failed', error);
+      }
+    }
+  };
+
+  // --- 삭제 관련 로직 ---
+  const handleDeleteTrigger = (id) => {
+    setDeletingCategoryId(id);
+    setEditingCategoryId(null); 
+  };
+
+  const handleCancelDelete = () => {
+    setDeletingCategoryId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingCategoryId) return;
+
+    const token = localStorage.getItem('accessToken');
+    
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/delete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          categoryId: deletingCategoryId
+        })
+      });
+
+      if (!res.ok) throw new Error("Category Delete API Network Error");
+
+      // 성공 시 프론트엔드 상태 업데이트 (낙관적 UI 적용)
+      setCategories((prev) => prev.filter(cat => cat.id !== deletingCategoryId));
       
-      // 요청 스펙대로 우선은 기본 회색(#D9D9D9)으로 생성
-      setCategories([...categories, { id: newId, name: newCategoryName, color: '#D9D9D9' }]);
-      
-      setIsAddPopoverOpen(false);
-      setNewCategoryName('');
+      // 모달 닫기
+      setDeletingCategoryId(null);
+
+    } catch (error) {
+      console.error('Category Deletion Failed', error);
     }
   };
 
@@ -203,7 +374,13 @@ const MyPage = () => {
           </div>
 
           <div className={styles['page-title-bar']}>
-            <svg style={{cursor: 'pointer'}} width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="#A6A6A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 1L1 7L7 13"/></svg>
+            <svg 
+              onClick={() => navigate(-1)} 
+              style={{cursor: 'pointer'}} 
+              width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="#A6A6A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <path d="M7 1L1 7L7 13"/>
+            </svg>
             <span className={styles['page-title']}>my page</span>
           </div>
         </header>
@@ -235,15 +412,6 @@ const MyPage = () => {
                 <div className={styles['dot-indicators']}>
                   {summaryData.switchDays.map((isActive, i) => (
                     <div key={`switch-${i}`} className={`${styles.dot} ${isActive ? styles['dot-active'] : styles['dot-inactive']}`} />
-                  ))}
-                </div>
-              </div>
-
-              <div className={`${styles['summary-block']} ${styles['goal-block']}`}>
-                <h3 className={styles['block-title']}>이번 주 목표를 얼마나 달성했나요?</h3>
-                <div className={styles['dot-indicators']}>
-                  {summaryData.goalDays.map((isActive, i) => (
-                    <div key={`goal-${i}`} className={`${styles.dot} ${isActive ? styles['dot-active'] : styles['dot-inactive']}`} />
                   ))}
                 </div>
               </div>
@@ -294,7 +462,15 @@ const MyPage = () => {
           className={styles['edit-popover']} 
           style={popoverStyle}
         >
-          <span className={styles['edit-title']}>카테고리 이름 변경</span>
+          <div className={styles['edit-title-row']}>
+            <span className={styles['edit-title']}>카테고리 이름 변경</span>
+            <span 
+              className={styles['edit-delete-btn']} 
+              onClick={() => handleDeleteTrigger(editingCategoryId)}
+            >
+              삭제
+            </span>
+          </div>
           <div className={styles['edit-input-wrapper']}>
             <input 
               type="text" 
@@ -302,6 +478,7 @@ const MyPage = () => {
               placeholder="이름을 입력하세요"
               value={categories.find(c => c.id === editingCategoryId)?.name || ''}
               onChange={(e) => handleNameChange(e, editingCategoryId)}
+              onKeyDown={(e) => handleNameKeyDown(e, editingCategoryId, categories.find(c => c.id === editingCategoryId)?.name)}
               autoFocus
             />
           </div>
@@ -343,13 +520,36 @@ const MyPage = () => {
         >
           <span className={styles['add-title']}>카테고리 추가</span>
           <div className={styles['add-row']}>
-            {/* 1. 좌측: 색상 동그라미 (순서 변경 및 이미지와 유사하게 SVG 수정) */}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="7" cy="7" r="6.5" stroke="#D7D7D7" strokeWidth="1"/>
-              <circle cx="7" cy="7" r="3.5" fill="#A6A6A6"/>
-            </svg>
+            
+            <div className={styles['add-color-selector-wrapper']}>
+              <svg 
+                width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"
+                onClick={() => setIsAddColorPaletteOpen(!isAddColorPaletteOpen)}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle cx="7" cy="7" r="6.5" stroke="#D7D7D7" strokeWidth="1"/>
+                <circle cx="7" cy="7" r="4.5" fill={newCategoryColor}/>
+              </svg>
 
-            {/* 2. 우측: 입력창 (순서 변경) */}
+              {isAddColorPaletteOpen && (
+                <div ref={addColorPaletteRef} className={styles['add-color-palette-popover']}>
+                  <div className={styles['color-palette-simple']}>
+                    {COLOR_PALETTE.map((color, idx) => (
+                      <div 
+                        key={`add-new-color-${idx}`} 
+                        className={styles['color-circle']} 
+                        style={{ backgroundColor: color }}
+                        onClick={() => {
+                          setNewCategoryColor(color);
+                          setIsAddColorPaletteOpen(false);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className={styles['add-input-wrapper']}>
               <input 
                 type="text" 
@@ -365,8 +565,26 @@ const MyPage = () => {
         </div>
       )}
 
+      {/* 4. 카테고리 삭제 모달 (전체 화면 Overlay) */}
+      {deletingCategoryId && (
+        <div className={styles['delete-modal-overlay']} onClick={handleCancelDelete}>
+          <div 
+            className={styles['delete-modal-container']} 
+            onClick={(e) => e.stopPropagation()} 
+          >
+            <span className={styles['delete-modal-title']}>카테고리를 삭제하시겠습니까?</span>
+            <div className={styles['delete-btn-row']}>
+              <button className={styles['cancel-btn']} onClick={handleCancelDelete}>
+                취소
+              </button>
+              <button className={styles['confirm-delete-btn']} onClick={handleConfirmDelete}>
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
-};
-
-export default MyPage;
+}
