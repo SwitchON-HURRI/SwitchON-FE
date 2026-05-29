@@ -415,3 +415,326 @@
   background: var(--color-text-secondary);
   color: #FFFFFF;
 }
+
+/* ==========================================
+   3. 새 일정 추가 모달 (Add Schedule)
+   ========================================== */
+.add-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; 
+  z-index: 9999;
+}
+
+.add-bottom-sheet {
+  display: flex;
+  width: 370px;
+  flex-direction: column;
+  background: #FFF;
+  border-radius: 30px 30px 0 0;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+}
+
+.add-content {
+  display: flex;
+  flex-direction: column;
+  padding: 45px 30px 30px 30px;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.add-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.add-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.pin-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-group-full {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 15px;
+}
+
+.form-group-half {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 140px; 
+}
+
+.form-group-full label, 
+.form-group-half label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+}
+
+.input-basic {
+  border-radius: 10px;
+  border: 1px solid #D9D9D9;
+  background: #FFF;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  outline: none; 
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  color: #000; 
+}
+.input-basic::placeholder {
+  color: #DCDCDC;
+}
+
+/* 수정됨: 꺽쇠 아이콘 배치를 위한 부모 래퍼 */
+.input-dropdown-wrapper {
+  position: relative;
+  width: 140px;
+  height: 34px;
+}
+
+/* 수정됨: 꺽쇠 아이콘 절대 배치 및 통과 이벤트 지정 */
+.dropdown-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* 클릭 이벤트가 하단 인풋창으로 넘어가 다이얼이 잘 열리도록 처리 */
+}
+
+.input-select-dropdown {
+  width: 140px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #D9D9D9;
+  background: #FFF;
+  color: #4C4C4C;
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none; 
+}
+
+/* 네이티브 브라우저 고유 화살표/캘린더 아이콘 숨김 처리 */
+.input-select-dropdown::-webkit-calendar-picker-indicator {
+  position: absolute;
+  left: 0; top: 0; width: 100%; height: 100%;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+}
+
+.input-select-dropdown::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.input-category {
+  display: flex;
+  width: 140px;
+  height: 34px;
+  padding: 10px;
+  align-items: center;
+  gap: 9px;
+  border-radius: 10px;
+  border: 1px solid var(--, #D9D9D9);
+  background: #FFF;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.importance-dots {
+  display: flex;
+  width: 140px;
+  height: 34px;
+  padding: 10px;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--, #D9D9D9);
+  background: #FFF;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.dot-dark { width: 10px; height: 10px; border-radius: 50%; background-color: #4C4C4C; }
+.dot-light { width: 10px; height: 10px; border-radius: 50%; background-color: #D9D9D9; }
+
+.add-action-buttons {
+  display: flex;
+  width: 100%;
+}
+
+.add-btn-cancel, .add-btn-select {
+  display: flex;
+  width: 185px; 
+  height: 45px;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0; 
+  line-height: normal;
+}
+
+.add-btn-cancel {
+  background: var(--, #F2F2F2);
+  color: #4C4C4C;
+}
+
+.add-btn-select {
+  background: var(--TEXT, #4C4C4C);
+  color: #FFF;
+}
+
+/* ==========================================
+   4. 내부 이너 모달 (카테고리, 메모 입력창)
+   ========================================== */
+.inner-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.2); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000; 
+}
+
+.category-modal-box, .memo-modal-box {
+  width: 229px;
+  height: 292px;
+  border-radius: 20px;
+  border: 1px solid var(--, #C1C1C1);
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px;
+  box-sizing: border-box;
+}
+
+.inner-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  color: #4C4C4C;
+  font-family: Pretendard, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.category-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.category-item {
+  display: inline-flex;
+  padding: 8px 19px; 
+  align-items: center;
+  gap: 13px;
+  border-radius: 15px;
+  border: 1px solid #EFEFEF;
+  color: #4C4C4C;
+  font-family: Pretendard, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.category-item:hover {
+  background-color: #FAFAFA;
+}
+
+.category-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.memo-textarea {
+  display: inline-flex;
+  height: 181px;
+  padding: 15px;
+  flex-direction: column;
+  border-radius: 10px; 
+  border: 1px solid #D9D9D9;
+  resize: none;
+  outline: none;
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  color: #4C4C4C;
+}
+.memo-textarea::placeholder {
+  color: var(--, #DCDCDC);
+}
+
+.memo-action-area {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.memo-add-btn {
+  background: #4C4C4C;
+  color: #FFF;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}

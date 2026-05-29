@@ -22,6 +22,13 @@ const formatYYYYMMDD = (date) => {
   return `${y}-${m}-${d}`;
 };
 
+// --- [추가됨] HH:MM 포맷 변환 헬퍼 함수 (현재 시각 초기화용) ---
+const formatHHMM = (date) => {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+};
+
 // --- Mock Data ---
 const mockSchedules = [
   {
@@ -63,6 +70,37 @@ export default function Weekly() {
   // 필터 모달 상태
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterOption, setFilterOption] = useState("마감 임박순"); 
+
+  // --- 일정 추가 모달 및 하위 모달 상태 ---
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isMemoModalOpen, setIsMemoModalOpen] = useState(false);
+  
+  const [newSchedule, setNewSchedule] = useState({
+    title: "", 
+    categoryId: 1, 
+    importance: 3, 
+    date: formatYYYYMMDD(new Date()), 
+    location: "", 
+    time: formatHHMM(new Date()), 
+    memo: ""
+  });
+
+  // --- [추가됨] 모달이 닫힐 때 데이터를 사용자의 요구사항대로 초기화하는 함수 ---
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+    const now = new Date();
+    setNewSchedule({
+      title: "",
+      categoryId: categories[0]?.categoryId || 1, // 목록 중 최상단 카테고리
+      importance: 3,
+      date: formatYYYYMMDD(now), // 오늘 날짜
+      location: "",
+      time: formatHHMM(now), // 현재 시각 (HH:MM)
+      memo: ""
+    });
+  };
 
   useEffect(() => {
     const today = new Date();
@@ -125,9 +163,15 @@ export default function Weekly() {
         if (!categoryRes.ok) throw new Error("Category API Network Error");
         const categoryData = await categoryRes.json();
         setCategories(categoryData || []);
+        
+        // 카테고리 로드가 완료되면 초기 상태의 최상단 ID값 업데이트
+        if (categoryData && categoryData.length > 0) {
+          setNewSchedule(prev => ({ ...prev, categoryId: categoryData[0].categoryId }));
+        }
       } catch (error) {
         console.error("Category API Fetch Failed, loading Mock Data", error);
         setCategories(mockCategories);
+        setNewSchedule(prev => ({ ...prev, categoryId: mockCategories[0].categoryId }));
       }
     };
 
@@ -254,16 +298,27 @@ export default function Weekly() {
               <div className={styles['task-header']}>
                 <h2 className={styles['week-title']}>{currentWeekStr}</h2>
                 <div className={styles['task-header-icons']}>
+                  
+                  {/* 필터 버튼 */}
                   <svg 
-                    width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg"
                     onClick={() => setIsFilterModalOpen(true)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <path d="M0 1H18M0 7H12M0 13H6" stroke="black" strokeWidth="2"/>
+                    <rect x="0" y="0" width="20" height="3" rx="1.5" fill="black"/>
+                    <rect x="4" y="6" width="12" height="3" rx="1.5" fill="black"/>
+                    <rect x="7" y="12" width="6" height="3" rx="1.5" fill="black"/>
                   </svg>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7 0V14M0 7H14" stroke="black" strokeWidth="2"/>
+                  
+                  {/* 일정 추가 버튼 (+) */}
+                  <svg 
+                    width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    onClick={() => setIsAddModalOpen(true)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <path d="M12 4V20M4 12H20" stroke="black" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
+
                 </div>
               </div>
               
@@ -337,7 +392,7 @@ export default function Weekly() {
                 {selectedTask.location && (
                   <div className={styles['modal-info-row']}>
                     <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 0C2.68629 0 0 2.68629 0 6C0 10.5 6 14 6 14C6 14 12 10.5 12 6C12 2.68629 9.31371 0 6 0ZM6 8.5C4.61929 8.5 3.5 7.38071 3.5 6C3.5 4.61929 4.61929 3.5 6 3.5C7.38071 3.5 8.5 4.61929 8.5 6C8.5 7.38071 7.38071 8.5 6 8.5Z" fill="#4C4C4C"/>
+                      <path d="M6 0C2.68629 0 0 2.68629 0 6C0 10.5 6 14 6 14C6 14 12 10.5 12 6C12 2.68629 9.31371 0 6 0ZM6 8.5C4.61929 8.5 3.5 7.38071 3.5 6C3.5 4.61929 4.61929 3.5 6 3.5 Regular" fill="#4C4C4C"/>
                     </svg>
                     <span>{selectedTask.location}</span>
                   </div>
@@ -405,6 +460,183 @@ export default function Weekly() {
                 </button>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* --- 3. 새 일정 추가 모달 --- */}
+        {isAddModalOpen && (
+          <div className={styles['add-overlay']} onClick={handleCloseAddModal}>
+            <div className={styles['add-bottom-sheet']} onClick={(e) => e.stopPropagation()}>
+              <div className={styles['add-content']}>
+                <div className={styles['add-header']}>
+                  <h2>일정 추가</h2>
+                  <button className={styles['pin-btn']} onClick={() => setIsPinned(!isPinned)}>
+                    {isPinned ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 14L18 16V18H13V22L12 24L11 22V18H6V16L8 14V8C8 5.79086 9.79086 4 12 4C14.2091 4 16 5.79086 16 8V14Z" stroke="#4C4C4C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#4C4C4C" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 14L18 16V18H13V22L12 24L11 22V18H6V16L8 14V8C8 5.79086 9.79086 4 12 4C14.2091 4 16 5.79086 16 8V14Z"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+
+                <div className={styles['form-group-full']}>
+                  <label>일정 이름</label>
+                  <input 
+                    type="text" 
+                    placeholder="일정 이름을 입력하세요." 
+                    className={styles['input-basic']}
+                    value={newSchedule.title}
+                    onChange={(e) => setNewSchedule({...newSchedule, title: e.target.value})}
+                  />
+                </div>
+
+                <div className={styles['form-row']}>
+                  <div className={styles['form-group-half']}>
+                    <label>카테고리</label>
+                    <div className={styles['input-category']} onClick={() => setIsCategoryModalOpen(true)}>
+                      <div className={styles['color-dot']} style={{backgroundColor: getCategoryInfo(newSchedule.categoryId).categoryColor}}></div>
+                      <span>{getCategoryInfo(newSchedule.categoryId).categoryName}</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles['form-group-half']}>
+                    <label>중요도</label>
+                    <div className={styles['importance-dots']}>
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div 
+                          key={level} 
+                          className={newSchedule.importance >= level ? styles['dot-dark'] : styles['dot-light']}
+                          onClick={() => setNewSchedule({...newSchedule, importance: level})}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles['form-row']}>
+                  <div className={styles['form-group-half']}>
+                    <label>마감일</label>
+                    {/* 수정됨: 꺽쇠 아이콘 포함 구조로 래핑 */}
+                    <div className={styles['input-dropdown-wrapper']}>
+                      <input 
+                        type="date"
+                        className={styles['input-select-dropdown']}
+                        value={newSchedule.date}
+                        onChange={(e) => setNewSchedule({...newSchedule, date: e.target.value})}
+                      />
+                      <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <div className={styles['form-group-half']}>
+                    <label>장소</label>
+                    <input 
+                      type="text" 
+                      placeholder="장소를 입력해주세요." 
+                      className={styles['input-basic']}
+                      value={newSchedule.location}
+                      onChange={(e) => setNewSchedule({...newSchedule, location: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                {!isPinned && (
+                  <div className={styles['form-row']}>
+                    <div className={styles['form-group-half']}>
+                      <label>시간</label>
+                      {/* 수정됨: 꺽쇠 아이콘 포함 구조로 래핑 */}
+                      <div className={styles['input-dropdown-wrapper']}>
+                        <input 
+                          type="time"
+                          step="300"
+                          className={styles['input-select-dropdown']}
+                          value={newSchedule.time}
+                          onChange={(e) => setNewSchedule({...newSchedule, time: e.target.value})}
+                        />
+                        <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    <div className={styles['form-group-half']}>
+                      <label>메모</label>
+                      <input 
+                        type="text" 
+                        placeholder={newSchedule.memo ? newSchedule.memo : "메모를 입력해주세요."} 
+                        className={styles['input-basic']}
+                        onClick={() => setIsMemoModalOpen(true)}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles['add-action-buttons']}>
+                <button className={styles['add-btn-cancel']} onClick={handleCloseAddModal}>취소</button>
+                <button className={styles['add-btn-select']} onClick={handleCloseAddModal}>추가</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- 4. 카테고리/메모 이너 모달 --- */}
+        {isCategoryModalOpen && (
+          <div className={styles['inner-modal-overlay']} onClick={() => setIsCategoryModalOpen(false)}>
+            <div className={styles['category-modal-box']} onClick={(e) => e.stopPropagation()}>
+              <div className={styles['inner-modal-header']} onClick={() => setIsCategoryModalOpen(false)}>
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 1L1 6L6 11" stroke="#8E8E8E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>카테고리 목록</span>
+              </div>
+              <div className={styles['category-list-wrapper']}>
+                {categories.map((cat) => (
+                  <div 
+                    key={cat.categoryId} 
+                    className={styles['category-item']}
+                    onClick={() => {
+                      setNewSchedule({...newSchedule, categoryId: cat.categoryId});
+                      setIsCategoryModalOpen(false);
+                    }}
+                  >
+                    <div className={styles['category-dot']} style={{backgroundColor: cat.categoryColor}}></div>
+                    <span>{cat.categoryName}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isMemoModalOpen && (
+          <div className={styles['inner-modal-overlay']} onClick={() => setIsMemoModalOpen(false)}>
+            <div className={styles['memo-modal-box']} onClick={(e) => e.stopPropagation()}>
+              <div className={styles['inner-modal-header']} onClick={() => setIsMemoModalOpen(false)}>
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 1L1 6L6 11" stroke="#8E8E8E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>메모 입력</span>
+              </div>
+              
+              <textarea 
+                className={styles['memo-textarea']} 
+                placeholder="메모를 입력해주세요."
+                value={newSchedule.memo}
+                onChange={(e) => setNewSchedule({...newSchedule, memo: e.target.value})}
+              />
+              
+              <div className={styles['memo-action-area']}>
+                <button className={styles['memo-add-btn']} onClick={() => setIsMemoModalOpen(false)}>추가</button>
+              </div>
             </div>
           </div>
         )}
