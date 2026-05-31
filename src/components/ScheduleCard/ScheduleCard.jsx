@@ -12,7 +12,7 @@ export default function ScheduleCard({
   date,
   time,
   location,
-  des,
+  memo,
   onEdit,
 }) {
   return (
@@ -66,9 +66,9 @@ export default function ScheduleCard({
             </div>
           )}
         </div>
-        {des && (
-          <div className={styles.desBox}>
-            <span>{des}</span>
+        {memo && (
+          <div className={styles.memoBox}>
+            <span>{memo}</span>
           </div>
         )}
       </div>

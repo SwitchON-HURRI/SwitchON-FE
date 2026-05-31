@@ -1,28 +1,65 @@
+import { useEffect, useState } from "react";
 import styles from "./CategorySelectModal.module.css";
 
-const categories = [
-  { id: 1, name: "업무", color: "#FF6B6B" },
-  { id: 2, name: "공부", color: "#4ECDC4" },
-  { id: 3, name: "운동", color: "#45B7D1" },
-  { id: 4, name: "개인", color: "#FFA07A" },
-  { id: 5, name: "기타", color: "#98D8C8" },
-  { id: 6, name: "쇼핑", color: "#F7DC6F" },
-  { id: 7, name: "휴식", color: "#BB8FCE" },
-  { id: 8, name: "약속", color: "#85C1E2" },
-];
-
 export default function CategorySelectModal({ onClose, onSelect }) {
+  const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        const accessToken = localStorage.getItem("accessToken");
+        const response = await fetch(`${BASE_URL}/category/read`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const categoryList =
+          data?.categories || data?.data || data?.result || data;
+
+        setCategories(Array.isArray(categoryList) ? categoryList : []);
+      } catch (error) {
+        console.error("카테고리 조회 실패:", error);
+        alert("카테고리 목록을 불러오지 못했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={styles.overlay}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
       <div className={styles.container} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <span className={styles.title}>카테고리 선택</span>
+          <span className={styles.title}>카테고리 목록</span>
         </div>
 
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
+        {isLoading && <span className={styles.message}>불러오는 중...</span>}
+        {!isLoading && categories.length === 0 && (
+          <span className={styles.message}>카테고리가 없습니다.</span>
+        )}
+        {!isLoading &&
+          categories.map((category) => (
             <button
-              key={category.id}
+              key={category.categoryId}
               type="button"
               className={styles.categoryItem}
               onClick={() => {
@@ -32,12 +69,14 @@ export default function CategorySelectModal({ onClose, onSelect }) {
             >
               <div
                 className={styles.categoryItemDot}
-                style={{ backgroundColor: category.color }}
+                style={{
+                  backgroundColor: category.categoryColor,
+                }}
               ></div>
-              <span>{category.name}</span>
+
+              <span>{category.categoryName}</span>
             </button>
           ))}
-        </div>
       </div>
     </div>
   );

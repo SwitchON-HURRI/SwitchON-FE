@@ -110,15 +110,15 @@
   gap: 5px;
 }
 
-.desBox {
+.memoBox {
   display: flex;
   padding: 10px;
   gap: 10px;
   border-radius: 5px;
-  background: #fff;
+  background: #ffffffc6;
 }
 
-.desBox span {
+.memoBox span {
   min-height: 30px;
   color: #4c4c4c;
   font-size: 11px;
