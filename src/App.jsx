@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home.jsx";
+import Home from "./pages/HomePage/Home.jsx";
 import Login from "./pages/LoginPage/Login.jsx";
-import Today from "./pages/Today.jsx";
+import Today from "./pages/TodayPage/Today.jsx";
+import ManageSchedule from "./pages/TodayPage/ManageSchedule.jsx";
 import Weekly from "./pages/WeeklyPage/Weekly.jsx";
 import Monthly from "./pages/Monthly.jsx";
 import MyPage from "./pages/MyPage/MyPage.jsx";
@@ -21,6 +22,7 @@ function App() {
         
         {/* 나머지 라우트는 기본값(showAlert=true)이 적용되어 기존 로직 유지 */}
         <Route path="/today" element={<ProtectedRoute><Today /></ProtectedRoute>} />
+        <Route path="/manage-schedule" element={<ProtectedRoute><ManageSchedule /></ProtectedRoute>} />
         <Route path="/weekly" element={<ProtectedRoute><Weekly /></ProtectedRoute>} />
         <Route path="/monthly" element={<ProtectedRoute><Monthly /></ProtectedRoute>} />
         <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
