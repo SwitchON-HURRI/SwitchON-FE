@@ -4,7 +4,7 @@ import Login from "./pages/LoginPage/Login.jsx";
 import Today from "./pages/Today.jsx";
 import Weekly from "./pages/WeeklyPage/Weekly.jsx";
 import Monthly from "./pages/Monthly.jsx";
-import MyPage from "./pages/MyPage.jsx";
+import MyPage from "./pages/MyPage/MyPage.jsx";
 import Notice from "./pages/Notice.jsx";
 import Setting from "./pages/Setting.jsx";
 import LoginSuccess from "./pages/LoginPage/LoginSucess.jsx";
