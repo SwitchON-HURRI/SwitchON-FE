@@ -1,15 +1,23 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 import powerIcon from "../../assets/icon/Power.svg";
 import kakaoBtnImg from "../../assets/icon/kakaologin.png";
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  // 이미 로그인된 사용자가 로그인 페이지에 접근할 경우 메인으로 리다이렉트
+  useEffect(() => {
+    const isAuthenticated = !!localStorage.getItem("accessToken");
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
+
   // 카카오 로그인 버튼 클릭 시 실행될 함수
   const handleKakaoLogin = () => {
-    // 환경변수나 상수로 관리 중인 백엔드 베이스 URL을 넣어주세요.
-    // 이전 스웨거 스크린샷 기준의 도메인을 예시로 작성했습니다.
     const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
-    
-    // 가이드 문서 내용대로 백엔드 로그인 엔드포인트로 브라우저를 이동시킵니다.
     window.location.href = `${BASE_URL}/login/oauth2/kakao`;
   };
 
