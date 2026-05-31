@@ -94,8 +94,6 @@ export default function AddEditScheduleModal({
         return;
       }
 
-      const formattedTime = formatTime(formData.startTime);
-
       payload = {
         categoryId,
         title: formData.title || "제목 없음",
@@ -103,8 +101,8 @@ export default function AddEditScheduleModal({
         scheduleType: "FIXED",
         scheduleDate: formData.dueDate,
 
-        startTime: formattedTime,
-        endTime: formattedTime,
+        startTime: formatTime(formData.startTime),
+        endTime: formatTime(formData.endTime),
 
         memo: formData.memo || "",
         location: formData.location || "",

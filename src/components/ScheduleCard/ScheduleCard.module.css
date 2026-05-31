@@ -80,13 +80,6 @@
   background-color: #fff;
 }
 
-.edit {
-  color: #a5a5a5;
-  font-size: 12px;
-  text-decoration-line: underline;
-  text-underline-position: from-font;
-}
-
 .detailContainer {
   display: flex;
   flex-direction: column;
@@ -123,4 +116,41 @@
   color: #4c4c4c;
   font-size: 11px;
   font-weight: 300;
+}
+.swipeWrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.deleteBackground {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: calc(100% - 4px);
+  background-color: #ff4d4f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 0 20px 20px 0;
+}
+
+.completeBackground {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: calc(100% - 4px);
+  background-color: #4caf50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 20px 0 0 20px;
 }

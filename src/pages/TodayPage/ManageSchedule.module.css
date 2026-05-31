@@ -94,3 +94,18 @@
   column-gap: 45px;
 }
 
+.selectStateContainer button {
+  padding: 10px 25px 9px 25px;
+  border-radius: 30px;
+  border: 1px solid #cecece;
+  background: #fff;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.1);
+  color: #000;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.selectStateContainer {
+  display: flex;
+  gap: 22px;
+}

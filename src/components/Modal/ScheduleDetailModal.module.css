@@ -93,7 +93,7 @@
   color: #a5a5a5;
   font-size: 12px;
   text-decoration-line: underline;
-  text-underline-position: from-font;
+  width: fit-content;
 }
 
 .detailContainer {
@@ -157,4 +157,9 @@
   color: #4c4c4c;
   font-size: 12px;
   font-weight: 300;
+}
+
+.deleteIcon {
+  width: 14px;
+  height: 14px;
 }

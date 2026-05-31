@@ -5,6 +5,7 @@ import locationIcon from "../../assets/icon/location.svg";
 import dateIcon from "../../assets/icon/date.svg";
 import timeIcon from "../../assets/icon/time.svg";
 import addIcon from "../../assets/icon/add-3.svg";
+import deleteIcon from "../../assets/icon/fi-rr-trash.svg";
 import ConfirmModal from "./ConfirmModal.jsx";
 import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
@@ -21,9 +22,12 @@ export default function ScheduleDetailModal({
   onEdit,
   onClose,
   onAdded,
+  onDelete,
 }) {
+  const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [todayScheduleIds, setTodayScheduleIds] = useState([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     fetchTodaySchedules();
@@ -41,7 +45,6 @@ export default function ScheduleDetailModal({
       });
 
       const data = await res.json();
-
       setTodayScheduleIds(data.map((item) => item.scheduleId));
     } catch (err) {
       console.error(err);
@@ -59,11 +62,10 @@ export default function ScheduleDetailModal({
   const isToday = (date) => {
     return date?.slice(0, 10) === getToday();
   };
-  const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
 
   const handleAddTodaySchedule = async () => {
     if (todayScheduleIds.includes(scheduleId)) {
-      alert("이미 오늘 일정에 추가된 일정입니다.");
+      alert("이미 오늘 일정에 추가됐거나 완료된 일정입니다.");
       setIsConfirmOpen(false);
       return;
     }
@@ -90,9 +92,32 @@ export default function ScheduleDetailModal({
       onAdded?.(); // Today 목록 새로고침
 
       alert("오늘 일정에 추가되었습니다.");
+      onClose();
     } catch (error) {
       console.error("오늘 일정 추가 실패:", error);
       alert("추가에 실패했습니다.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      const res = await fetch(`${BASE_URL}/schedule/delete/${scheduleId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("삭제 실패");
+
+      onDelete?.();
+      onClose();
+    } catch (error) {
+      console.error("일정 삭제 실패:", error);
+      alert("삭제에 실패했습니다.");
     }
   };
 
@@ -134,9 +159,20 @@ export default function ScheduleDetailModal({
                 ))}
               </div>
             )}
-            <span className={styles.edit} onClick={onEdit}>
-              일정 수정
-            </span>
+            <div style={{ display: "flex", gap: "6px" }}>
+              <img
+                src={deleteIcon}
+                className={styles.deleteIcon}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteConfirmOpen(true);
+                }}
+              ></img>
+              <span className={styles.edit} onClick={onEdit}>
+                일정 수정
+              </span>
+            </div>
+
             {isToday(date) && (
               <div
                 className={styles.addBtn}
@@ -178,6 +214,13 @@ export default function ScheduleDetailModal({
           onClose={() => setIsConfirmOpen(false)}
           onConfirm={handleAddTodaySchedule}
           text="오늘 일정에 추가하시겠습니까?"
+        />
+      )}
+      {isDeleteConfirmOpen && (
+        <ConfirmModal
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          onConfirm={handleDelete}
+          text="일정을 삭제하시겠습니까?"
         />
       )}
     </div>

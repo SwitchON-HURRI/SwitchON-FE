@@ -17,7 +17,40 @@ export default function ManageSchedule() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [isReselectMode, setIsReselectMode] = useState(false);
 
+  const handleStateReselect = () => {
+    setIsReselectMode(true);
+  };
+
+  // 상태값 수정
+  const handleStateSelect = async (condition) => {
+    // 같은 값 선택 시 그냥 닫기
+    if (condition === selectedState) {
+      setSelectedState(condition);
+      return;
+    }
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      const res = await fetch(`${BASE_URL}/state/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ condition }),
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("상태 저장 실패");
+
+      setSelectedState(condition);
+    } catch (error) {
+      console.error("상태 업데이트 실패:", error);
+    }
+  };
 
   const toggleCategory = (categoryId) => {
     setExpandedCategories((prev) => ({
@@ -72,7 +105,7 @@ export default function ManageSchedule() {
             );
             if (!scheduleRes.ok) return { ...category, schedules: [] };
             const schedules = await scheduleRes.json();
-            console.log(schedules)
+
             return { ...category, schedules };
           } catch {
             return { ...category, schedules: [] };
@@ -102,7 +135,41 @@ export default function ManageSchedule() {
     <>
       <Header />
       <div className={styles.container}>
-        <SelectedState selected={selectedState || "선택한 값"} />
+        <div
+          className={styles.selectStateContainer}
+          style={{ display: isReselectMode ? "flex" : "none" }}
+        >
+          <button
+            onClick={() => {
+              handleStateSelect("comfort");
+              setIsReselectMode(false);
+            }}
+          >
+            comfort
+          </button>
+          <button
+            onClick={() => {
+              handleStateSelect("regular");
+              setIsReselectMode(false);
+            }}
+          >
+            regular
+          </button>
+          <button
+            onClick={() => {
+              handleStateSelect("hard");
+              setIsReselectMode(false);
+            }}
+          >
+            hard
+          </button>
+        </div>
+        <SelectedState
+          selected={selectedState}
+          onClick={() =>
+            isReselectMode ? setIsReselectMode(false) : handleStateReselect()
+          }
+        />
         <div className={styles.pageTitleWrapper}>
           <img
             src={backArrow}
@@ -180,7 +247,7 @@ export default function ManageSchedule() {
                   color: category?.categoryColor,
                   name: category?.categoryName,
                 }}
-                importance={selectedSchedule.importance ?? 0}
+                importance={selectedSchedule.importance}
                 date={selectedSchedule.scheduleDate}
                 time={
                   selectedSchedule.startTime && selectedSchedule.endTime
@@ -191,6 +258,11 @@ export default function ManageSchedule() {
                 memo={selectedSchedule.memo}
                 onEdit={() => setIsEditModalOpen(true)}
                 onClose={() => {
+                  setIsDetailModalOpen(false);
+                  setSelectedSchedule(null);
+                }}
+                onDelete={() => {
+                  fetchCategoriesWithSchedules();
                   setIsDetailModalOpen(false);
                   setSelectedSchedule(null);
                 }}

@@ -27,6 +27,8 @@ const getArcPath = (radius, startAngle, endAngle) => {
 };
 
 export default function Ring({ schedules, className }) {
+  if (!schedules || schedules.length === 0) return null;
+  
   const counts = {};
 
   schedules.forEach((schedule) => {
