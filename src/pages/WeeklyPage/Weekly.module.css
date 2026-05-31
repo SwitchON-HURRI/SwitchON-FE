@@ -738,3 +738,33 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ==========================================
+   5. 토스트 팝업 (Toast Message)
+   ========================================== */
+.toast-popup {
+  position: absolute;
+  bottom: 80px; 
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(76, 76, 76, 0.8);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: var(--font-family);
+  font-size: 8px; /* 요청하신 크기 */
+  font-weight: 400;
+  z-index: 10001; /* 다른 모달들보다 위에 뜨도록 설정 */
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+  animation: fadeInOut 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, 10px); }
+  20% { opacity: 1; transform: translate(-50%, 0); }
+  80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}

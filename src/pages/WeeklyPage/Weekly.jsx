@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from "../../components/Header/Header.jsx";
 import styles from './Weekly.module.css';
 
@@ -77,6 +77,10 @@ export default function Weekly() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isMemoModalOpen, setIsMemoModalOpen] = useState(false);
   
+  // --- [추가됨] 토스트 팝업 상태 ---
+  const [toastMessage, setToastMessage] = useState("");
+  const toastTimer = useRef(null);
+  
   const [newSchedule, setNewSchedule] = useState({
     title: "", 
     categoryId: 1, 
@@ -87,7 +91,7 @@ export default function Weekly() {
     memo: ""
   });
 
-  // --- [추가됨] 모달이 닫힐 때 데이터를 사용자의 요구사항대로 초기화하는 함수 ---
+  // 모달이 닫힐 때 데이터를 사용자의 요구사항대로 초기화하는 함수
   const handleCloseAddModal = () => {
     setIsAddModalOpen(false);
     const now = new Date();
@@ -187,6 +191,42 @@ export default function Weekly() {
   const handleTaskClick = (schedule) => {
     setSelectedTask(schedule);
     setIsTaskModalOpen(true);
+  };
+
+  // --- [추가됨] 오늘 일정에 추가 핸들러 ---
+  const handleAddToToday = async () => {
+    const todayStr = formatYYYYMMDD(new Date());
+    
+    // 날짜가 다르면 팝업 띄우고 종료
+    if (selectedTask.scheduledDate !== todayStr) {
+      setToastMessage("다른 날짜의 일정은 추가 할 수 없습니다.");
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => {
+        setToastMessage("");
+      }, 500);
+      return;
+    }
+
+    // 날짜가 같으면 API 호출
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/today-schedule/add/${selectedTask.scheduleId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error("오늘 일정 추가에 실패했습니다.");
+      }
+      
+      // 성공 시 처리 (모달 닫기)
+      setIsTaskModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const filterOptionsList = ['중요도순', '마감 임박순', '카테고리순'];
@@ -381,7 +421,8 @@ export default function Weekly() {
                 <span className={styles['modal-edit-text']}>일정 수정</span>
               </div>
 
-              <button className={styles['modal-add-btn']}>
+              {/* [수정됨] 클릭 이벤트 연동 */}
+              <button className={styles['modal-add-btn']} onClick={handleAddToToday}>
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5 0V10M0 5H10" stroke="#4C4C4C" strokeWidth="1.5"/>
                 </svg>
@@ -521,7 +562,6 @@ export default function Weekly() {
                 <div className={styles['form-row']}>
                   <div className={styles['form-group-half']}>
                     <label>마감일</label>
-                    {/* 수정됨: 꺽쇠 아이콘 포함 구조로 래핑 */}
                     <div className={styles['input-dropdown-wrapper']}>
                       <input 
                         type="date"
@@ -551,7 +591,6 @@ export default function Weekly() {
                   <div className={styles['form-row']}>
                     <div className={styles['form-group-half']}>
                       <label>시간</label>
-                      {/* 수정됨: 꺽쇠 아이콘 포함 구조로 래핑 */}
                       <div className={styles['input-dropdown-wrapper']}>
                         <input 
                           type="time"
@@ -638,6 +677,13 @@ export default function Weekly() {
                 <button className={styles['memo-add-btn']} onClick={() => setIsMemoModalOpen(false)}>추가</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* --- [추가됨] 토스트 팝업 UI --- */}
+        {toastMessage && (
+          <div className={styles['toast-popup']}>
+            {toastMessage}
           </div>
         )}
 
