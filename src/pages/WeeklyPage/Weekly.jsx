@@ -22,7 +22,7 @@ const formatYYYYMMDD = (date) => {
   return `${y}-${m}-${d}`;
 };
 
-// --- [추가됨] HH:MM 포맷 변환 헬퍼 함수 (현재 시각 초기화용) ---
+// HH:MM 포맷 변환 헬퍼 함수 (현재 시각 초기화용)
 const formatHHMM = (date) => {
   const h = String(date.getHours()).padStart(2, '0');
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -61,7 +61,7 @@ export default function Weekly() {
   const [currentWeekStr, setCurrentWeekStr] = useState("");
   const [days, setDays] = useState([]);
   const [schedules, setSchedules] = useState([]);
-  const [categories, setCategories] = useState([]); // 카테고리 상태 추가
+  const [categories, setCategories] = useState([]); 
   
   // Task 상세 모달 상태
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -77,7 +77,7 @@ export default function Weekly() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isMemoModalOpen, setIsMemoModalOpen] = useState(false);
   
-  // --- [추가됨] 토스트 팝업 상태 ---
+  // 토스트 팝업 상태
   const [toastMessage, setToastMessage] = useState("");
   const toastTimer = useRef(null);
   
@@ -91,24 +91,82 @@ export default function Weekly() {
     memo: ""
   });
 
-  // 모달이 닫힐 때 데이터를 사용자의 요구사항대로 초기화하는 함수
+  // 모달이 닫힐 때 데이터 초기화
   const handleCloseAddModal = () => {
     setIsAddModalOpen(false);
     const now = new Date();
     setNewSchedule({
       title: "",
-      categoryId: categories[0]?.categoryId || 1, // 목록 중 최상단 카테고리
+      categoryId: categories[0]?.categoryId || 1, 
       importance: 3,
-      date: formatYYYYMMDD(now), // 오늘 날짜
+      date: formatYYYYMMDD(now),
       location: "",
-      time: formatHHMM(now), // 현재 시각 (HH:MM)
+      time: formatHHMM(now), 
       memo: ""
     });
   };
 
+  // --- [추가됨] 일정 생성 API 호출 핸들러 ---
+  const handleAddSchedule = async () => {
+    // 1. API 명세서에 맞게 데이터 포맷팅
+    const payload = {
+      categoryId: newSchedule.categoryId,
+      title: newSchedule.title,
+      memo: isPinned ? "" : newSchedule.memo, // 핀 고정 시 메모 비우기 (필요에 따라 수정 가능)
+      location: newSchedule.location,
+      scheduleType: isPinned ? "FLEXIBLE" : "FIXED", // 핀 여부에 따른 타입 설정
+      scheduledDate: newSchedule.date,
+      // 핀 고정이 아닐 경우 시간에 ":00"을 붙여 HH:MM:SS 포맷으로 변환
+      startTime: (!isPinned && newSchedule.time) ? `${newSchedule.time}:00` : null, 
+      endTime: null,
+      estimatedMinutes: null,
+      importance: newSchedule.importance
+    };
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/schedule/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("일정 생성에 실패했습니다.");
+      }
+
+      // 서버에서 생성된 일정 객체를 그대로 받아옵니다.
+      const createdSchedule = await response.json();
+
+      // 2. 상태 업데이트를 통해 화면에 즉시 반영
+      setSchedules(prev => [...prev, createdSchedule]);
+      
+      // 모달 닫기
+      handleCloseAddModal();
+      
+      // 3. 성공 토스트 메시지 띄우기
+      setToastMessage("일정이 성공적으로 추가되었습니다.");
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => {
+        setToastMessage("");
+      }, 2000);
+
+    } catch (error) {
+      console.error("일정 추가 중 오류 발생:", error);
+      setToastMessage("일정 추가 중 문제가 발생했습니다.");
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => {
+        setToastMessage("");
+      }, 2000);
+    }
+  };
+
   useEffect(() => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // 시간 초기화
+    today.setHours(0, 0, 0, 0); 
     setCurrentWeekStr(getWeekOfMonth(today));
 
     const currentDayOfWeek = today.getDay(); 
@@ -123,7 +181,6 @@ export default function Weekly() {
     const startDateStr = formatYYYYMMDD(monday);
     const endDateStr = formatYYYYMMDD(sunday);
 
-    // 날짜 배열 세팅
     const calculatedDays = [];
     for (let i = 0; i < 7; i++) {
       const dateObj = new Date(monday);
@@ -136,7 +193,6 @@ export default function Weekly() {
     }
     setDays(calculatedDays);
 
-    // 일정 및 카테고리 API 동시 호출 로직
     const fetchData = async () => {
       const token = localStorage.getItem('accessToken');
       const headers = {
@@ -144,7 +200,6 @@ export default function Weekly() {
         'Content-Type': 'application/json'
       };
 
-      // 1. 일정 전체 조회
       try {
         const scheduleRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/schedule/read/range?startDate=${startDateStr}&endDate=${endDateStr}`, {
           method: 'GET',
@@ -158,7 +213,6 @@ export default function Weekly() {
         setSchedules(mockSchedules);
       }
 
-      // 2. 카테고리 전체 조회
       try {
         const categoryRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/read`, {
           method: 'GET',
@@ -168,7 +222,6 @@ export default function Weekly() {
         const categoryData = await categoryRes.json();
         setCategories(categoryData || []);
         
-        // 카테고리 로드가 완료되면 초기 상태의 최상단 ID값 업데이트
         if (categoryData && categoryData.length > 0) {
           setNewSchedule(prev => ({ ...prev, categoryId: categoryData[0].categoryId }));
         }
@@ -182,7 +235,6 @@ export default function Weekly() {
     fetchData();
   }, []);
 
-  // 카테고리 정보 매칭 헬퍼 함수
   const getCategoryInfo = (categoryId) => {
     const matchedCategory = categories.find(c => c.categoryId === categoryId);
     return matchedCategory || { categoryName: "미지정", categoryColor: "#C1C1C1" };
@@ -193,11 +245,9 @@ export default function Weekly() {
     setIsTaskModalOpen(true);
   };
 
-  // --- [추가됨] 오늘 일정에 추가 핸들러 ---
   const handleAddToToday = async () => {
     const todayStr = formatYYYYMMDD(new Date());
     
-    // 날짜가 다르면 팝업 띄우고 종료
     if (selectedTask.scheduledDate !== todayStr) {
       setToastMessage("다른 날짜의 일정은 추가 할 수 없습니다.");
       if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -207,7 +257,6 @@ export default function Weekly() {
       return;
     }
 
-    // 날짜가 같으면 API 호출
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/today-schedule/add/${selectedTask.scheduleId}`, {
@@ -222,8 +271,12 @@ export default function Weekly() {
         throw new Error("오늘 일정 추가에 실패했습니다.");
       }
       
-      // 성공 시 처리 (모달 닫기)
       setIsTaskModalOpen(false);
+      setToastMessage("오늘 일정에 추가되었습니다.");
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => {
+        setToastMessage("");
+      }, 2000);
     } catch (error) {
       console.error(error);
     }
@@ -231,7 +284,6 @@ export default function Weekly() {
 
   const filterOptionsList = ['중요도순', '마감 임박순', '카테고리순'];
   
-  // 선택된 필터 옵션에 따라 일정 배열을 정렬하는 로직
   const sortedSchedules = [...schedules].sort((a, b) => {
     if (filterOption === '중요도순') {
       const impA = a.importance ?? -1;
@@ -267,7 +319,6 @@ export default function Weekly() {
     return 0;
   });
 
-  // 모달에 표시할 선택된 일정의 카테고리 정보
   const selectedCategoryInfo = getCategoryInfo(selectedTask.categoryId);
 
   return (
@@ -421,7 +472,6 @@ export default function Weekly() {
                 <span className={styles['modal-edit-text']}>일정 수정</span>
               </div>
 
-              {/* [수정됨] 클릭 이벤트 연동 */}
               <button className={styles['modal-add-btn']} onClick={handleAddToToday}>
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M5 0V10M0 5H10" stroke="#4C4C4C" strokeWidth="1.5"/>
@@ -619,9 +669,10 @@ export default function Weekly() {
                 )}
               </div>
 
+              {/* [수정됨] 추가 버튼 onClick 이벤트 연결 */}
               <div className={styles['add-action-buttons']}>
                 <button className={styles['add-btn-cancel']} onClick={handleCloseAddModal}>취소</button>
-                <button className={styles['add-btn-select']} onClick={handleCloseAddModal}>추가</button>
+                <button className={styles['add-btn-select']} onClick={handleAddSchedule}>추가</button>
               </div>
             </div>
           </div>
@@ -680,7 +731,7 @@ export default function Weekly() {
           </div>
         )}
 
-        {/* --- [추가됨] 토스트 팝업 UI --- */}
+        {/* --- 토스트 팝업 UI --- */}
         {toastMessage && (
           <div className={styles['toast-popup']}>
             {toastMessage}
