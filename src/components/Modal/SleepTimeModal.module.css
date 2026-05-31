@@ -1,0 +1,62 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(114, 114, 114, 0.47);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  padding: 20px 30px;
+  margin: 0 55px;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+
+  border-radius: 30px;
+  background: #fff;
+}
+
+.container span {
+  align-self: stretch;
+  color: #4c4c4c;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+}
+
+.btn1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  padding: 10px;
+  border: none;
+  background-color: #4c4c4c;
+  color: #f2f2f2;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  padding: 10px;
+  border: 1px solid #c1c1c1;
+  background-color: #fff;
+  color: #4c4c4c;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+}
