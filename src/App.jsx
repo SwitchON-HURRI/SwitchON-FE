@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/LoginPage/Login.jsx";
 import Today from "./pages/Today.jsx";
-import Weekly from "./pages/Weekly.jsx";
+import Weekly from "./pages/WeeklyPage/Weekly.jsx";
 import Monthly from "./pages/Monthly.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import Notice from "./pages/Notice.jsx";
