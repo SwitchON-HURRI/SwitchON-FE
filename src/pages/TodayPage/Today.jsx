@@ -25,6 +25,68 @@ export default function Today() {
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isTodayListOpen, setIsTodayListOpen] = useState(false);
+  const [todayDateSchedules, setTodayDateSchedules] = useState([]);
+  const [isReselectMode, setIsReselectMode] = useState(false);
+
+  const handleStateReselect = () => {
+    setIsReselectMode(true);
+  };
+
+  const fetchTodayDateSchedules = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+
+      const res = await fetch(
+        `${BASE_URL}/schedule/read/date?date=${yyyy}-${mm}-${dd}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        },
+      );
+      const data = await res.json();
+      setTodayDateSchedules(data);
+    } catch (err) {
+      setTodayDateSchedules([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodayDateSchedules();
+  }, []);
+
+  // 상태값 수정
+  const handleStateSelect = async (condition) => {
+    // 같은 값 선택 시 그냥 닫기
+    if (condition === selectedState) {
+      setSelectedState(condition);
+      return;
+    }
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      const res = await fetch(`${BASE_URL}/state/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ condition }),
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("상태 저장 실패");
+
+      setSelectedState(condition);
+    } catch (error) {
+      console.error("상태 업데이트 실패:", error);
+    }
+  };
 
   const fetchCategories = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -89,7 +151,7 @@ export default function Today() {
       }
 
       const data = await response.json();
-      setTodaySchedules(data);
+      setTodaySchedules(data.filter((s) => !s.isCompleted)); // 완료된 일정 안 보이게 필터링
     } catch (error) {
       console.error("오늘 일정 조회 실패:", error);
       setTodaySchedules([]);
@@ -127,8 +189,8 @@ export default function Today() {
           throw new Error(`reset 실패: ${resetResponse.status}`);
         }
 
-        // 2. 상태 삭제
-        const stateResponse = await fetch(`${BASE_URL}/state/delete`, {
+        // 상태 삭제 (상태값의 유무가 하루의 시작 유무)
+        await fetch(`${BASE_URL}/state/delete`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -137,10 +199,6 @@ export default function Today() {
           body: JSON.stringify({}),
           credentials: "include",
         });
-
-        if (!stateResponse.ok) {
-          throw new Error(`state 삭제 실패: ${stateResponse.status}`);
-        }
 
         navigate("/");
       } catch (error) {
@@ -196,7 +254,42 @@ export default function Today() {
     <>
       <Header />
       <div className={styles.container}>
-        <SelectedState selected={selectedState || "선택한 값"} />
+        <div
+          className={styles.selectStateContainer}
+          style={{ display: isReselectMode ? "flex" : "none" }}
+        >
+          <button
+            onClick={() => {
+              handleStateSelect("comfort");
+              setIsReselectMode(false);
+            }}
+          >
+            comfort
+          </button>
+          <button
+            onClick={() => {
+              handleStateSelect("regular");
+              setIsReselectMode(false);
+            }}
+          >
+            regular
+          </button>
+          <button
+            onClick={() => {
+              handleStateSelect("hard");
+              setIsReselectMode(false);
+            }}
+          >
+            hard
+          </button>
+        </div>
+
+        <SelectedState
+          selected={selectedState}
+          onClick={() =>
+            isReselectMode ? setIsReselectMode(false) : handleStateReselect()
+          }
+        />
         <div className={styles.ringWrapper} onClick={handleRingWrapperClick}>
           <Ring className={styles.ring} schedules={todaySchedules} />
           <img className={styles.switchBtn} src={switchBtn} alt="스위치 버튼" />
@@ -224,7 +317,7 @@ export default function Today() {
                 name: schedule.categoryName,
                 color: schedule.categoryColor,
               }}
-              importance={schedule.importance ?? 0}
+              importance={schedule.importance}
               date={schedule.scheduleDate}
               time={
                 schedule.startTime && schedule.endTime
@@ -234,11 +327,42 @@ export default function Today() {
               location={schedule.location}
               memo={schedule.memo}
               onEdit={() => handleEdit(schedule.scheduleId)}
+              onRemove={async () => {
+                const accessToken = localStorage.getItem("accessToken");
+                const res = await fetch(
+                  `${BASE_URL}/today-schedule/remove/${schedule.todayScheduleId}`,
+                  {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                    credentials: "include",
+                  },
+                );
+                if (res.ok) fetchTodaySchedules();
+              }}
+              onComplete={async () => {
+                const accessToken = localStorage.getItem("accessToken");
+                const res = await fetch(
+                  `${BASE_URL}/today-schedule/complete/${schedule.todayScheduleId}`,
+                  {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                    credentials: "include",
+                  },
+                );
+                if (res.ok) fetchTodaySchedules();
+                console.log("완료 처리 성공");
+              }}
             />
           ))}
           <div
             className={styles.addScheduleBox}
-            onClick={() => setIsTodayListOpen(true)}
+            onClick={() => {
+              if (todayDateSchedules.length === 0) {
+                alert("담을 일정이 없습니다.");
+                return;
+              }
+              setIsTodayListOpen(true);
+            }}
           >
             <span>
               +<br />

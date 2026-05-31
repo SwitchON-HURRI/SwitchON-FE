@@ -5,8 +5,8 @@ import styles from "./Home.module.css";
 import switchBtn from "../../assets/switch.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
-import AddEditScheduleModal from "../../components/Modal/AddEditScheduleModal.jsx";
 import SleepTimeModal from "../../components/Modal/SleepTimeModal.jsx";
+import TodayScheduleListModal from "../../components/Modal/TodayScheduleListModal.jsx";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,9 +14,36 @@ export default function Home() {
 
   const [selectedState, setSelectedState] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isAddEditScheduleModalOpen, setIsAddEditScheduleModalOpen] =
-    useState(false);
+  const [isTodayListModalOpen, setIsTodayListModalOpen] = useState(false);
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
+  const [todayDateSchedules, setTodayDateSchedules] = useState([]);
+
+  const fetchTodayDateSchedules = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+
+      const res = await fetch(
+        `${BASE_URL}/schedule/read/date?date=${yyyy}-${mm}-${dd}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        },
+      );
+      const data = await res.json();
+      setTodayDateSchedules(data);
+    } catch (err) {
+      setTodayDateSchedules([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodayDateSchedules();
+  }, []);
 
   // 스위치 ON 확인
   const handleConfirm = async () => {
@@ -116,7 +143,7 @@ export default function Home() {
   return (
     <>
       <Header />
-
+      <div className={styles.dim} />
       <div className={styles.container}>
         <div
           className={styles.selectStateContainer}
@@ -125,13 +152,16 @@ export default function Home() {
           }}
         >
           <button onClick={() => setSelectedState("comfort")}>comfort</button>
-
           <button onClick={() => setSelectedState("regular")}>regular</button>
-
           <button onClick={() => setSelectedState("hard")}>hard</button>
         </div>
 
-        <SelectedState selected={selectedState || "선택한 값"} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <SelectedState
+            selected={selectedState || "선택한 값"}
+            onClick={() => setSelectedState(null)}
+          />
+        </div>
 
         <div className={styles.ringWrapper}>
           <img
@@ -144,11 +174,17 @@ export default function Home() {
 
         <div
           className={styles.addScheduleBox}
-          onClick={() => setIsAddEditScheduleModalOpen(true)}
+          onClick={() => {
+            if (todayDateSchedules.length === 0) {
+              alert("담을 일정이 없습니다.");
+              return;
+            }
+            setIsTodayListOpen(true);
+          }}
         >
           <span>
             +<br />
-            일정을 추가하세요
+            오늘 일정을 담아보세요
           </span>
         </div>
 
@@ -160,17 +196,16 @@ export default function Home() {
           />
         )}
 
-        {isAddEditScheduleModalOpen && (
-          <AddEditScheduleModal
-            mode="add"
-            onClose={() => setIsAddEditScheduleModalOpen(false)}
-          />
-        )}
-
         {isSleepModalOpen && (
           <SleepTimeModal
             onClose={() => setIsSleepModalOpen(false)}
             onConfirm={handleSleepSubmit}
+          />
+        )}
+
+        {isTodayListModalOpen && (
+          <TodayScheduleListModal
+            onClose={() => setIsTodayListModalOpen(false)}
           />
         )}
       </div>

@@ -5,6 +5,7 @@
   gap: 31px;
   border-radius: 30px;
   background: #ededed;
+  cursor: pointer;
 }
 
 .selectedStateContainer span {
