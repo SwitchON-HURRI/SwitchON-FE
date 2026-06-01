@@ -6,7 +6,7 @@ import Weekly from "./pages/Weekly.jsx";
 import Monthly from "./pages/Monthly.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import Notice from "./pages/Notice.jsx";
-import Setting from "./pages/Setting.jsx";
+import Setting from "./pages/SettingPage/Setting.jsx";
 import LoginSuccess from "./pages/LoginPage/LoginSucess.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
