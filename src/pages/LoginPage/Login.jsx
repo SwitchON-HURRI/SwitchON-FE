@@ -25,9 +25,21 @@ export default function Login() {
     <>
       <div className={styles.login}>
         <h1 className={styles.title}>
+          <p style={{ 
+            marginBottom: "-8px", 
+            color: "#838383", 
+            fontSize: "12px", 
+            fontStyle: "normal", 
+            fontWeight: 400, 
+            lineHeight: "normal" 
+          }}>
+            @HURRI.OFFICIAL
+          </p>
+          <div>
           <span className={styles.loginTitleText}>SWITCH</span>
           <img src={powerIcon} alt="Power Icon" className={styles.powerIcon} />
           <span className={styles.loginTitleText}>N</span>
+          </div>
         </h1>
         <p className={styles.loginSubtitle}>
           소셜 계정으로 간편하게 가입하기
