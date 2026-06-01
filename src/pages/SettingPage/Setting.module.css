@@ -1,0 +1,213 @@
+/* 공통 레이아웃 설정 */
+.mobile-wrapper {
+  background-color: #F5F5F5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-container {
+  width: 100%;
+  max-width: 412px;
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+/* 헤더 & GNB */
+.header-section {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px 10px 22px;
+  gap: 16px;
+}
+
+.gnb {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 56px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4C4C4C;
+  margin: 0;
+  line-height: 24px;
+}
+
+.header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* 메인 콘텐츠 영역 */
+.main-content {
+  padding: 10px 22px 40px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 페이지 타이틀 바 */
+.page-title-bar {
+  display: flex;
+  align-items: center;
+  background-color: #FBFBFB;
+  border-radius: 20px;
+  padding: 12px 16px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4C4C4C;
+  line-height: 24px;
+}
+
+/* 섹션 및 카드 레이아웃 */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.card {
+  border: 1px solid #E7E7E7;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  overflow: hidden; 
+}
+
+/* 설정 리스트 스타일 */
+.setting-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 개별 리스트 아이템 버튼화 */
+.setting-item {
+  position: relative;
+  padding: 18px 25px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #4C4C4C;
+  cursor: pointer;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+/* 터치/클릭 피드백 효과 */
+.setting-item:active {
+  background-color: #F9F9F9;
+}
+
+/* 양옆 여백이 있는 구분선 구현 (마지막 아이템 제외) */
+.setting-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25px;
+  right: 25px;
+  height: 1px;
+  background-color: #EFEFEF;
+}
+
+/* =========================================================
+   문의/탈퇴 팝업 (모달) CSS 추가
+   ========================================================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; 
+}
+
+.modal-container {
+  display: flex;
+  width: 260px; /* 두 줄 텍스트가 잘 보이도록 너비 조정 */
+  padding: 24px 20px 20px 20px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border-radius: 24px;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  box-sizing: border-box; 
+  text-align: center;
+}
+
+.modal-title {
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-btn-row {
+  display: flex;
+  gap: 10px; 
+  width: 100%;
+}
+
+.cancel-btn {
+  display: flex;
+  flex: 1; /* 버튼 너비를 반반씩 차지하도록 */
+  padding: 10px 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid #E2E2E2;
+  background: transparent;
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  display: flex;
+  flex: 1; /* 버튼 너비를 반반씩 차지하도록 */
+  padding: 10px 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  border: none;
+  background: #4C4C4C;
+  color: #D7D7D7;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
