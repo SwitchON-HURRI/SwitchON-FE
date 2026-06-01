@@ -375,8 +375,8 @@ export default function MyPage() {
   };
 
   const handleNotificationClick = () => console.log("알림 이동");
-  const handleProfileClick = () => console.log("프로필 이동");
-  const handleMoreClick = () => console.log("더보기 메뉴 오픈");
+  const handleProfileClick = () => navigate("/mypage");
+  const handleMoreClick = () => navigate("/setting");
 
   // --- 컨디션 배치 계산 로직 ---
   const getConditionLayout = () => {
