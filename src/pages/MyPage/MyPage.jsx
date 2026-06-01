@@ -18,37 +18,42 @@ export default function MyPage() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [categories, setCategories] = useState([]);
+  
+  // --- [주간 요약 UI 용 상태] API 연동을 위해 초기값 0으로 세팅 ---
+  const [weeklyCondition, setWeeklyCondition] = useState({
+    regularCount: 1, 
+    comfortCount: 3, 
+    hardCount: 2,   
+    totalCount: 6, 
+    isError: false, 
+  });
+
   const [summaryData, setSummaryData] = useState({
-    conditions: { regular: 0, comfort: 0, hard: 0 },
     switchDays: Array(7).fill(false),
     goalDays: Array(7).fill(false),
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- 카테고리 이름 편집 팝오버 관련 상태 ---
+  // --- [카테고리 팝오버/모달 상태] ---
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [popoverStyle, setPopoverStyle] = useState({});
   const popoverRef = useRef(null);
 
-  // --- 카테고리 색상 편집 팝오버 관련 상태 ---
   const [editingColorCategoryId, setEditingColorCategoryId] = useState(null);
   const [colorPopoverStyle, setColorPopoverStyle] = useState({});
   const colorPopoverRef = useRef(null);
 
-  // --- 카테고리 추가 팝오버 관련 상태 ---
   const [isAddPopoverOpen, setIsAddPopoverOpen] = useState(false);
   const [addPopoverStyle, setAddPopoverStyle] = useState({});
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState(COLOR_PALETTE[2]);
   const addPopoverRef = useRef(null);
 
-  // --- 카테고리 추가 내 '색상 선택 팝오버' 상태 ---
   const [isAddColorPaletteOpen, setIsAddColorPaletteOpen] = useState(false);
   const addColorPaletteRef = useRef(null);
-
-  // --- 카테고리 삭제 모달 관련 상태 ---
   const [deletingCategoryId, setDeletingCategoryId] = useState(null);
 
+  // --- 데이터 패칭 ---
   useEffect(() => {
     const fetchMyPageData = async () => {
       setIsLoading(true);
@@ -103,9 +108,30 @@ export default function MyPage() {
         setCategories(mockCategories);
       }
 
-      // TODO: 주간 요약 데이터 API 연동 위치 (현재는 정적 데이터)
+      // 3. 주간 상태 집계 조회
+      try {
+        const stateRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/state/all/read`, {
+          method: 'GET',
+          headers
+        });
+
+        if (!stateRes.ok) throw new Error("State API Network Error");
+
+        const stateData = await stateRes.json();
+        setWeeklyCondition({
+          regularCount: stateData.regularCount || 0,
+          comfortCount: stateData.comfortCount || 0,
+          hardCount: stateData.hardCount || 0,
+          totalCount: stateData.totalCount || 0,
+          isError: false,
+        });
+      } catch (error) {
+        console.error("State API Fetch Failed", error);
+        setWeeklyCondition(prev => ({ ...prev, isError: true }));
+      }
+
+      // TODO: 스위치 요약 데이터 API 연동 위치
       setSummaryData({
-        conditions: { regular: 2, comfort: 3, hard: 1 },
         switchDays: [false, false, false, false, true, false, false], 
         goalDays: [false, false, false, false, false, false, false]
       });
@@ -142,7 +168,6 @@ export default function MyPage() {
   }, []);
 
   // --- 이벤트 핸들러 ---
-  
   const handleCategoryRowClick = (e, id) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const popoverHeight = 81; 
@@ -313,7 +338,6 @@ export default function MyPage() {
     }
   };
 
-  // --- 삭제 관련 로직 ---
   const handleDeleteTrigger = (id) => {
     setDeletingCategoryId(id);
     setEditingCategoryId(null); 
@@ -342,10 +366,7 @@ export default function MyPage() {
 
       if (!res.ok) throw new Error("Category Delete API Network Error");
 
-      // 성공 시 프론트엔드 상태 업데이트 (낙관적 UI 적용)
       setCategories((prev) => prev.filter(cat => cat.id !== deletingCategoryId));
-      
-      // 모달 닫기
       setDeletingCategoryId(null);
 
     } catch (error) {
@@ -356,6 +377,82 @@ export default function MyPage() {
   const handleNotificationClick = () => console.log("알림 이동");
   const handleProfileClick = () => console.log("프로필 이동");
   const handleMoreClick = () => console.log("더보기 메뉴 오픈");
+
+  // --- 컨디션 배치 계산 로직 ---
+  const getConditionLayout = () => {
+    const defaultData = {
+      isDimmed: false,
+      pills: [],
+    };
+
+    if (weeklyCondition.isError || weeklyCondition.totalCount === 0) {
+      return { ...defaultData, isDimmed: true };
+    }
+
+    const items = [
+      { id: 'regular', label: 'Regular', count: weeklyCondition.regularCount, baseClass: styles['pill-regular'], width: 92 },
+      { id: 'comfort', label: 'Comfort', count: weeklyCondition.comfortCount, baseClass: styles['pill-comfort'], width: 118 },
+      { id: 'hard', label: 'Hard', count: weeklyCondition.hardCount, baseClass: styles['pill-hard'], width: 88 },
+    ];
+
+    const priority = { regular: 3, comfort: 2, hard: 1 };
+    const sorted = [...items].sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return priority[b.id] - priority[a.id];
+    });
+
+    const locatedPills = [];
+    const renderedItems = items.filter(item => item.count > 0);
+    const areRenderedCountsEqual = renderedItems.length > 0 && renderedItems.every(item => item.count === renderedItems[0].count);
+
+    const posTypes = ['center', 'right', 'left'];
+
+    if (areRenderedCountsEqual) {
+      const posStyles = [
+        { left: '50%', transform: 'translateX(-50%)', zIndex: 2 },
+        { right: 0, zIndex: 1 },
+        { left: 0, zIndex: 1 },
+      ];
+
+      sorted.forEach((item, index) => {
+        if (item.count === 0) return;
+        locatedPills.push({ 
+          ...item, 
+          height: 56, 
+          posStyle: posStyles[index],
+          positionType: posTypes[index]
+        });
+      });
+    } else {
+      const countToHeightMap = { 3: 56, 2: 42, 1: 34 };
+      
+      sorted.forEach((item, index) => {
+        if (item.count === 0) return;
+        
+        const dynamicHeight = countToHeightMap[item.count] || 34;
+        let posStyle;
+        
+        if (index === 0) {
+          posStyle = { left: '50%', transform: 'translateX(-50%)', zIndex: 2 };
+        } else if (index === 1) {
+          posStyle = { right: 0, zIndex: 1 };
+        } else {
+          posStyle = { left: 0, zIndex: 1 };
+        }
+
+        locatedPills.push({ 
+          ...item, 
+          height: dynamicHeight,
+          posStyle,
+          positionType: posTypes[index]
+        });
+      });
+    }
+
+    return { ...defaultData, pills: locatedPills };
+  };
+
+  const { isDimmed, pills } = getConditionLayout();
 
   if (isLoading) return <div className={styles['mobile-wrapper']} />;
 
@@ -372,15 +469,8 @@ export default function MyPage() {
               <svg onClick={handleMoreClick} style={{cursor: 'pointer'}} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4C4C4C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
             </div>
           </div>
-
           <div className={styles['page-title-bar']}>
-            <svg 
-              onClick={() => navigate(-1)} 
-              style={{cursor: 'pointer'}} 
-              width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="#A6A6A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <path d="M7 1L1 7L7 13"/>
-            </svg>
+            <svg onClick={() => navigate(-1)} style={{cursor: 'pointer'}} width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="#A6A6A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 1L1 7L7 13"/></svg>
             <span className={styles['page-title']}>my page</span>
           </div>
         </header>
@@ -394,19 +484,46 @@ export default function MyPage() {
               <div className={`${styles['summary-block']} ${styles['condition-block']}`}>
                 <h3 className={styles['block-title']}>이번 주 컨디션</h3>
                 <div className={styles['condition-visual']}>
+                  
                   <div className={styles['condition-pills']}>
-                    <div className={`${styles.pill} ${styles['pill-regular']}`}>Regular</div>
-                    <div className={`${styles.pill} ${styles['pill-comfort']}`}>Comfort</div>
-                    <div className={`${styles.pill} ${styles['pill-hard']}`}>Hard</div>
+                    {pills.map((pill) => (
+                      <div 
+                        key={`pill-${pill.id}`}
+                        className={`${styles.pill} ${pill.baseClass}`}
+                        style={{
+                          width: `${pill.width}px`,   
+                          height: `${pill.height}px`, 
+                          ...pill.posStyle            
+                        }}
+                      >
+                        {pill.label}
+                      </div>
+                    ))}
                   </div>
+
                   <div className={styles['condition-counts']}>
-                    <div className={styles['count-circle']}>{summaryData.conditions.regular}회</div>
-                    <div className={styles['count-circle']}>{summaryData.conditions.comfort}회</div>
-                    <div className={styles['count-circle']}>{summaryData.conditions.hard}회</div>
+                    {['left', 'center', 'right'].map((pos) => {
+                      const matchedPill = pills.find(p => p.positionType === pos);
+                      return (
+                        <div 
+                          key={`count-${pos}`} 
+                          className={styles['count-circle']}
+                          style={{ visibility: matchedPill ? 'visible' : 'hidden' }}
+                        >
+                          {matchedPill ? `${matchedPill.count}회` : '0회'}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
 
+                {isDimmed && (
+                  <div className={styles['dim-overlay']}>
+                    <span className={styles['dim-text']}>주간 상태를 수집중입니다.</span>
+                  </div>
+                )}
+              </div>
+{/*2차 MVP}
               <div className={`${styles['summary-block']} ${styles['switch-block']}`}>
                 <h3 className={styles['block-title']}>이번 주 스위치가 얼마나 켜졌나요?</h3>
                 <div className={styles['dot-indicators']}>
@@ -414,7 +531,7 @@ export default function MyPage() {
                     <div key={`switch-${i}`} className={`${styles.dot} ${isActive ? styles['dot-active'] : styles['dot-inactive']}`} />
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           </section>
 
@@ -455,6 +572,8 @@ export default function MyPage() {
         </main>
       </div>
 
+      {/* --- 팝오버 및 모달 영역 --- */}
+
       {/* 1. 카테고리 이름 변경 팝오버 */}
       {editingCategoryId && (
         <div 
@@ -471,17 +590,16 @@ export default function MyPage() {
               삭제
             </span>
           </div>
-          <div className={styles['edit-input-wrapper']}>
-            <input 
-              type="text" 
-              className={styles['edit-input']} 
-              placeholder="이름을 입력하세요"
-              value={categories.find(c => c.id === editingCategoryId)?.name || ''}
-              onChange={(e) => handleNameChange(e, editingCategoryId)}
-              onKeyDown={(e) => handleNameKeyDown(e, editingCategoryId, categories.find(c => c.id === editingCategoryId)?.name)}
-              autoFocus
-            />
-          </div>
+          {/* 🌟 기존 wrapper 제거하고 input에 직접 스타일 적용 🌟 */}
+          <input 
+            type="text" 
+            className={styles['edit-input']} 
+            placeholder="이름을 입력하세요"
+            value={categories.find(c => c.id === editingCategoryId)?.name || ''}
+            onChange={(e) => handleNameChange(e, editingCategoryId)}
+            onKeyDown={(e) => handleNameKeyDown(e, editingCategoryId, categories.find(c => c.id === editingCategoryId)?.name)}
+            autoFocus
+          />
         </div>
       )}
 
@@ -550,17 +668,16 @@ export default function MyPage() {
               )}
             </div>
 
-            <div className={styles['add-input-wrapper']}>
-              <input 
-                type="text" 
-                className={styles['add-input']} 
-                placeholder="이름을 입력하세요"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                onKeyDown={handleAddSubmit}
-                autoFocus
-              />
-            </div>
+            {/* 🌟 기존 wrapper 제거하고 input에 직접 스타일 적용 🌟 */}
+            <input 
+              type="text" 
+              className={styles['add-input']} 
+              placeholder="이름을 입력하세요"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={handleAddSubmit}
+              autoFocus
+            />
           </div>
         </div>
       )}
