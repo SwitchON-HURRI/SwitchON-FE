@@ -8,7 +8,7 @@
 
 .mobile-container {
   width: 100%;
-  max-width: 412px; /* 피그마 기준 모바일 해상도 너비 */
+  max-width: 412px;
   background-color: #FFFFFF;
   min-height: 100vh;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
@@ -108,6 +108,11 @@
   margin: 0 0 16px 0;
 }
 
+/* --- [첫번째 코드] 주간 요약 전용 CSS 병합 부분 --- */
+.condition-block {
+  position: relative; /* dim 오버레이를 위한 기준점 설정 */
+}
+
 .condition-visual {
   display: flex;
   flex-direction: column;
@@ -121,7 +126,7 @@
   align-items: center;
   position: relative;
   width: 250px;
-  height: 56px;
+  height: 56px; /* 중앙 1순위의 고정 최대 높이 제공 */
 }
 
 .pill {
@@ -134,31 +139,20 @@
   align-items: center;
   justify-content: center;
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  transition: all 0.3s ease; /* 부드러운 위치/크기 전환 효과 추가 */
 }
 
 .pill-regular {
-  background-color: rgba(255, 153, 0, 0.2);
-  width: 92px;
-  height: 34px;
-  left: 0;
-  z-index: 1;
+  background-color: #ffebcc; 
 }
 
 .pill-comfort {
   background-color: #CADAB6;
-  width: 118px;
-  height: 56px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
 }
 
 .pill-hard {
   background-color: #F29481;
-  width: 88px;
-  height: 42px;
-  right: 0;
-  z-index: 1;
 }
 
 .condition-counts {
@@ -179,6 +173,27 @@
   font-size: 12px;
   color: #767676;
 }
+
+.dim-overlay {
+  position: absolute;
+  top: -10px; 
+  left: -10px; 
+  right: -10px;
+  bottom: -10px;
+  background-color: rgba(245, 245, 245, 0.85); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 15px; 
+}
+
+.dim-text {
+  color: #000000;
+  font-size: 10px;
+  font-weight: 500;
+}
+/* --- 주간 요약 CSS 병합 종료 --- */
 
 .dot-indicators {
   display: flex;
@@ -257,7 +272,7 @@
   box-sizing: border-box;
 }
 
-/* --- 카테고리 편집 팝오버 --- */
+/* --- [두번째 코드] 카테고리 편집 팝오버 CSS 병합 부분 --- */
 .edit-popover {
   border-radius: 10px 30px 30px 30px;
   border: 1px solid #D7D7D7;
@@ -293,7 +308,7 @@
 .edit-delete-btn {
   color: #C1C1C1;
   font-family: "Pretendard", -apple-system, sans-serif;
-  font-size: 10px; /* 명세에 따라 작게 표현 */
+  font-size: 10px; 
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
@@ -326,7 +341,7 @@
   color: #D7D7D7; 
 }
 
-/* --- 카테고리 색상 변경 팝오버 --- */
+/* 카테고리 색상 변경 팝오버 */
 .color-popover {
   border-radius: 10px 30px 30px 30px; 
   border: 1px solid #D7D7D7;
@@ -372,7 +387,7 @@
   background-color: #D7D7D7;
 }
 
-/* --- 카테고리 추가 팝오버 --- */
+/* 카테고리 추가 팝오버 */
 .add-popover {
   width: 337px;
   height: 76px;
@@ -433,7 +448,7 @@
   color: #D7D7D7;
 }
 
-/* --- 카테고리 추가 팝오버 내 색상 선택 관련 --- */
+/* 카테고리 추가 팝오버 내 색상 선택 */
 .add-color-selector-wrapper {
   position: relative;
   display: flex;
@@ -462,21 +477,18 @@
   gap: 12px; 
 }
 
-/* =========================================================
-   카테고리 삭제 확인 모달 CSS 추가 
-   ========================================================= */
-
+/* 카테고리 삭제 확인 모달 */
 .delete-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4); /* 화면 전체를 어둡게 */
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* 팝오버보다 위에 뜨도록 높게 설정 */
+  z-index: 2000; 
 }
 
 .delete-modal-container {
@@ -491,7 +503,7 @@
   border-radius: 30px;
   background: #FFF;
   box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
-  box-sizing: border-box; /* 패딩 포함 높이 유지 */
+  box-sizing: border-box; 
 }
 
 .delete-modal-title {
@@ -505,7 +517,7 @@
 
 .delete-btn-row {
   display: flex;
-  gap: 8px; /* 버튼 간격 */
+  gap: 8px; 
 }
 
 .cancel-btn {
@@ -541,3 +553,4 @@
   line-height: normal;
   cursor: pointer;
 }
+/* --- 팝오버 CSS 병합 종료 --- */
