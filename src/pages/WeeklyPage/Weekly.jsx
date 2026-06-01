@@ -22,7 +22,7 @@ const formatYYYYMMDD = (date) => {
   return `${y}-${m}-${d}`;
 };
 
-// HH:MM 포맷 변환 헬퍼 함수 (현재 시각 초기화용)
+// HH:MM 포맷 변환 헬퍼 함수
 const formatHHMM = (date) => {
   const h = String(date.getHours()).padStart(2, '0');
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -34,19 +34,19 @@ const mockSchedules = [
   {
     scheduleId: 10, userId: 1, categoryId: 1,
     title: "자료 조사", memo: "발표 자료 찾기", location: "카페",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date()), // 오늘
+    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date()),
     startTime: "10:00:00", endTime: "12:00:00", isCompleted: false
   },
   {
     scheduleId: 11, userId: 1, categoryId: 2,
     title: "팀 회의", memo: "프로젝트 진행 상황 공유", location: "회의실",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)), // 어제
+    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
     startTime: "14:00:00", endTime: "15:00:00", isCompleted: true
   },
   {
     scheduleId: 12, userId: 1, categoryId: 3,
     title: "기획안 작성", memo: "", location: "집",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)), // 어제
+    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
     startTime: "16:00:00", endTime: "18:00:00", isCompleted: false
   }
 ];
@@ -87,40 +87,97 @@ export default function Weekly() {
     importance: 3, 
     date: formatYYYYMMDD(new Date()), 
     location: "", 
-    time: formatHHMM(new Date()), 
+    startTime: formatHHMM(new Date()), 
+    endTime: formatHHMM(new Date(Date.now() + 3600000)), // 기본 1시간 뒤 설정
+    estimatedMinutes: 60,
     memo: ""
   });
+
+  // 토스트 메시지 출력 헬퍼 함수
+  const showToast = (message) => {
+    setToastMessage(message);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => {
+      setToastMessage("");
+    }, 2000);
+  };
 
   // 모달이 닫힐 때 데이터 초기화
   const handleCloseAddModal = () => {
     setIsAddModalOpen(false);
     const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 3600000);
     setNewSchedule({
       title: "",
       categoryId: categories[0]?.categoryId || 1, 
       importance: 3,
       date: formatYYYYMMDD(now),
       location: "",
-      time: formatHHMM(now), 
+      startTime: formatHHMM(now), 
+      endTime: formatHHMM(oneHourLater),
+      estimatedMinutes: 60,
       memo: ""
     });
   };
 
-  // --- [추가됨] 일정 생성 API 호출 핸들러 ---
+  // --- 일정 생성 API 호출 핸들러 ---
   const handleAddSchedule = async () => {
-    // 1. API 명세서에 맞게 데이터 포맷팅
+    // 공통 벨리데이션 체크
+    if (!newSchedule.title.trim()) {
+      showToast("일정 이름을 입력해주세요.");
+      return;
+    }
+
+    const type = isPinned ? "FLEXIBLE" : "FIXED";
+    const startT = newSchedule.startTime;
+    const endT = newSchedule.endTime;
+
+    // 1. FIXED 타입 벨리데이션
+    if (type === "FIXED") {
+      if (!startT || !endT) {
+        showToast("시작 시간과 종료 시간을 모두 입력해주세요.");
+        return;
+      }
+    }
+
+    // 2. 시간 순서 검증 규칙 (둘 다 입력되었을 때)
+    if (startT && endT) {
+      if (startT >= endT) {
+        showToast("종료 시간은 시작 시간보다 이후여야 합니다.");
+        return;
+      }
+    }
+
+    // 3. FLEXIBLE 타입 벨리데이션
+    if (type === "FLEXIBLE") {
+      if (!newSchedule.estimatedMinutes || Number(newSchedule.estimatedMinutes) < 1) {
+        showToast("소요 시간은 1분 이상이어야 합니다.");
+        return;
+      }
+      if (newSchedule.importance < 0 || newSchedule.importance > 5) {
+        showToast("중요도는 0에서 5 사이여야 합니다.");
+        return;
+      }
+    }
+
+    // 초 단위 포맷 변환용 헬퍼
+    const appendSeconds = (timeStr) => {
+      if (!timeStr) return null;
+      return timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+    };
+
+    // API 명세서 매핑 데이터 구조화
     const payload = {
       categoryId: newSchedule.categoryId,
       title: newSchedule.title,
-      memo: isPinned ? "" : newSchedule.memo, // 핀 고정 시 메모 비우기 (필요에 따라 수정 가능)
-      location: newSchedule.location,
-      scheduleType: isPinned ? "FLEXIBLE" : "FIXED", // 핀 여부에 따른 타입 설정
+      memo: newSchedule.memo, 
+      location: newSchedule.location || null,
+      scheduleType: type,
       scheduledDate: newSchedule.date,
-      // 핀 고정이 아닐 경우 시간에 ":00"을 붙여 HH:MM:SS 포맷으로 변환
-      startTime: (!isPinned && newSchedule.time) ? `${newSchedule.time}:00` : null, 
-      endTime: null,
-      estimatedMinutes: null,
-      importance: newSchedule.importance
+      startTime: appendSeconds(startT), 
+      endTime: appendSeconds(endT),
+      estimatedMinutes: type === "FLEXIBLE" ? Number(newSchedule.estimatedMinutes) : null,
+      importance: type === "FLEXIBLE" ? newSchedule.importance : null
     };
 
     try {
@@ -138,29 +195,14 @@ export default function Weekly() {
         throw new Error("일정 생성에 실패했습니다.");
       }
 
-      // 서버에서 생성된 일정 객체를 그대로 받아옵니다.
       const createdSchedule = await response.json();
-
-      // 2. 상태 업데이트를 통해 화면에 즉시 반영
       setSchedules(prev => [...prev, createdSchedule]);
-      
-      // 모달 닫기
       handleCloseAddModal();
-      
-      // 3. 성공 토스트 메시지 띄우기
-      setToastMessage("일정이 성공적으로 추가되었습니다.");
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => {
-        setToastMessage("");
-      }, 2000);
+      showToast("일정이 성공적으로 추가되었습니다.");
 
     } catch (error) {
       console.error("일정 추가 중 오류 발생:", error);
-      setToastMessage("일정 추가 중 문제가 발생했습니다.");
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => {
-        setToastMessage("");
-      }, 2000);
+      showToast("일정 추가 중 문제가 발생했습니다.");
     }
   };
 
@@ -249,11 +291,7 @@ export default function Weekly() {
     const todayStr = formatYYYYMMDD(new Date());
     
     if (selectedTask.scheduledDate !== todayStr) {
-      setToastMessage("다른 날짜의 일정은 추가 할 수 없습니다.");
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => {
-        setToastMessage("");
-      }, 500);
+      showToast("다른 날짜의 일정은 추가 할 수 없습니다.");
       return;
     }
 
@@ -272,11 +310,7 @@ export default function Weekly() {
       }
       
       setIsTaskModalOpen(false);
-      setToastMessage("오늘 일정에 추가되었습니다.");
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-      toastTimer.current = setTimeout(() => {
-        setToastMessage("");
-      }, 2000);
+      showToast("오늘 일정에 추가되었습니다.");
     } catch (error) {
       console.error(error);
     }
@@ -326,7 +360,6 @@ export default function Weekly() {
       <Header />
       <div className={styles['weekly-root']}>
         <div className={styles['frame-187']}>
-
           <main className={styles.main}>
             
             <section className={styles['calendar-strip']}>
@@ -389,8 +422,6 @@ export default function Weekly() {
               <div className={styles['task-header']}>
                 <h2 className={styles['week-title']}>{currentWeekStr}</h2>
                 <div className={styles['task-header-icons']}>
-                  
-                  {/* 필터 버튼 */}
                   <svg 
                     width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg"
                     onClick={() => setIsFilterModalOpen(true)}
@@ -401,7 +432,6 @@ export default function Weekly() {
                     <rect x="7" y="12" width="6" height="3" rx="1.5" fill="black"/>
                   </svg>
                   
-                  {/* 일정 추가 버튼 (+) */}
                   <svg 
                     width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                     onClick={() => setIsAddModalOpen(true)}
@@ -409,7 +439,6 @@ export default function Weekly() {
                   >
                     <path d="M12 4V20M4 12H20" stroke="black" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
-
                 </div>
               </div>
               
@@ -508,15 +537,11 @@ export default function Weekly() {
         {isFilterModalOpen && (
           <div className={styles['filter-overlay']} onClick={() => setIsFilterModalOpen(false)}>
             <div className={styles['filter-bottom-sheet']} onClick={(e) => e.stopPropagation()}>
-              
               <div className={styles['filter-drag-handle']}></div>
-              
               <div className={styles['filter-content']}>
                 <div className={styles['filter-title']}>일정 필터</div>
-                
                 <div className={styles['filter-section']}>
                   <div className={styles['filter-subtitle']}>정렬</div>
-                  
                   <div className={styles['filter-options']}>
                     {filterOptionsList.map(option => (
                       <div 
@@ -535,22 +560,9 @@ export default function Weekly() {
               </div>
 
               <div className={styles['filter-action-buttons']}>
-                <button 
-                  className={styles['filter-btn-cancel']} 
-                  onClick={() => setIsFilterModalOpen(false)}
-                >
-                  취소
-                </button>
-                <button 
-                  className={styles['filter-btn-select']} 
-                  onClick={() => {
-                    setIsFilterModalOpen(false);
-                  }}
-                >
-                  선택
-                </button>
+                <button className={styles['filter-btn-cancel']} onClick={() => setIsFilterModalOpen(false)}>취소</button>
+                <button className={styles['filter-btn-select']} onClick={() => setIsFilterModalOpen(false)}>선택</button>
               </div>
-
             </div>
           </div>
         )}
@@ -575,6 +587,7 @@ export default function Weekly() {
                   </button>
                 </div>
 
+                {/* 일정 이름 */}
                 <div className={styles['form-group-full']}>
                   <label>일정 이름</label>
                   <input 
@@ -586,6 +599,7 @@ export default function Weekly() {
                   />
                 </div>
 
+                {/* 카테고리 & 메모 (공통 공백 최소화 배치) */}
                 <div className={styles['form-row']}>
                   <div className={styles['form-group-half']}>
                     <label>카테고리</label>
@@ -596,19 +610,18 @@ export default function Weekly() {
                   </div>
                   
                   <div className={styles['form-group-half']}>
-                    <label>중요도</label>
-                    <div className={styles['importance-dots']}>
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div 
-                          key={level} 
-                          className={newSchedule.importance >= level ? styles['dot-dark'] : styles['dot-light']}
-                          onClick={() => setNewSchedule({...newSchedule, importance: level})}
-                        ></div>
-                      ))}
-                    </div>
+                    <label>메모</label>
+                    <input 
+                      type="text" 
+                      placeholder={newSchedule.memo ? newSchedule.memo : "메모를 입력해주세요."} 
+                      className={styles['input-basic']}
+                      onClick={() => setIsMemoModalOpen(true)}
+                      readOnly
+                    />
                   </div>
                 </div>
 
+                {/* 마감일 & 장소 */}
                 <div className={styles['form-row']}>
                   <div className={styles['form-group-half']}>
                     <label>마감일</label>
@@ -637,17 +650,19 @@ export default function Weekly() {
                   </div>
                 </div>
 
-                {!isPinned && (
+                {/* 타입 조건부 UI 렌더링 */}
+                {!isPinned ? (
+                  /* ================= FIXED TYPE (시간 중심) ================= */
                   <div className={styles['form-row']}>
                     <div className={styles['form-group-half']}>
-                      <label>시간</label>
+                      <label>시작 시간</label>
                       <div className={styles['input-dropdown-wrapper']}>
                         <input 
                           type="time"
                           step="300"
                           className={styles['input-select-dropdown']}
-                          value={newSchedule.time}
-                          onChange={(e) => setNewSchedule({...newSchedule, time: e.target.value})}
+                          value={newSchedule.startTime}
+                          onChange={(e) => setNewSchedule({...newSchedule, startTime: e.target.value})}
                         />
                         <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
@@ -656,20 +671,89 @@ export default function Weekly() {
                     </div>
                     
                     <div className={styles['form-group-half']}>
-                      <label>메모</label>
-                      <input 
-                        type="text" 
-                        placeholder={newSchedule.memo ? newSchedule.memo : "메모를 입력해주세요."} 
-                        className={styles['input-basic']}
-                        onClick={() => setIsMemoModalOpen(true)}
-                        readOnly
-                      />
+                      <label>종료 시간</label>
+                      <div className={styles['input-dropdown-wrapper']}>
+                        <input 
+                          type="time"
+                          step="300"
+                          className={styles['input-select-dropdown']}
+                          value={newSchedule.endTime}
+                          onChange={(e) => setNewSchedule({...newSchedule, endTime: e.target.value})}
+                        />
+                        <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  /* ================= FLEXIBLE TYPE (소요시간/중요도 중심) ================= */
+                  <>
+                    <div className={styles['form-row']}>
+                      <div className={styles['form-group-half']}>
+                        <label>소요 시간 (분)</label>
+                        <input 
+                          type="number"
+                          min="1"
+                          placeholder="예: 60"
+                          className={styles['input-basic']}
+                          value={newSchedule.estimatedMinutes}
+                          onChange={(e) => setNewSchedule({...newSchedule, estimatedMinutes: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className={styles['form-group-half']}>
+                        <label>중요도</label>
+                        <div className={styles['importance-dots']}>
+                          {[1, 2, 3, 4, 5].map((level) => (
+                            <div 
+                              key={level} 
+                              className={newSchedule.importance >= level ? styles['dot-dark'] : styles['dot-light']}
+                              onClick={() => setNewSchedule({...newSchedule, importance: level})}
+                            ></div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* FLEXIBLE 선택 가능 필드: 시작/종료 시간 */}
+                    <div className={styles['form-row']}>
+                      <div className={styles['form-group-half']}>
+                        <label>시작 시간 (선택)</label>
+                        <div className={styles['input-dropdown-wrapper']}>
+                          <input 
+                            type="time"
+                            step="300"
+                            className={styles['input-select-dropdown']}
+                            value={newSchedule.startTime}
+                            onChange={(e) => setNewSchedule({...newSchedule, startTime: e.target.value})}
+                          />
+                          <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      <div className={styles['form-group-half']}>
+                        <label>종료 시간 (선택)</label>
+                        <div className={styles['input-dropdown-wrapper']}>
+                          <input 
+                            type="time"
+                            step="300"
+                            className={styles['input-select-dropdown']}
+                            value={newSchedule.endTime}
+                            onChange={(e) => setNewSchedule({...newSchedule, endTime: e.target.value})}
+                          />
+                          <svg className={styles['dropdown-chevron']} width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L5 5L9 1" stroke="#4C4C4C" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 
-              {/* [수정됨] 추가 버튼 onClick 이벤트 연결 */}
               <div className={styles['add-action-buttons']}>
                 <button className={styles['add-btn-cancel']} onClick={handleCloseAddModal}>취소</button>
                 <button className={styles['add-btn-select']} onClick={handleAddSchedule}>추가</button>
