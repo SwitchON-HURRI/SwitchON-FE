@@ -34,19 +34,19 @@ const mockSchedules = [
   {
     scheduleId: 10, userId: 1, categoryId: 1,
     title: "자료 조사", memo: "발표 자료 찾기", location: "카페",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date()),
+    scheduleType: "FIXED", scheduleDate: formatYYYYMMDD(new Date()),
     startTime: "10:00:00", endTime: "12:00:00", isCompleted: false
   },
   {
     scheduleId: 11, userId: 1, categoryId: 2,
     title: "팀 회의", memo: "프로젝트 진행 상황 공유", location: "회의실",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
+    scheduleType: "FIXED", scheduleDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
     startTime: "14:00:00", endTime: "15:00:00", isCompleted: true
   },
   {
     scheduleId: 12, userId: 1, categoryId: 3,
     title: "기획안 작성", memo: "", location: "집",
-    scheduleType: "FIXED", scheduledDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
+    scheduleType: "FIXED", scheduleDate: formatYYYYMMDD(new Date(Date.now() - 86400000)),
     startTime: "16:00:00", endTime: "18:00:00", isCompleted: false
   }
 ];
@@ -173,7 +173,7 @@ export default function Weekly() {
       memo: newSchedule.memo, 
       location: newSchedule.location || null,
       scheduleType: type,
-      scheduledDate: newSchedule.date,
+      scheduleDate: newSchedule.date,
       startTime: appendSeconds(startT), 
       endTime: appendSeconds(endT),
       estimatedMinutes: type === "FLEXIBLE" ? Number(newSchedule.estimatedMinutes) : null,
@@ -290,7 +290,7 @@ export default function Weekly() {
   const handleAddToToday = async () => {
     const todayStr = formatYYYYMMDD(new Date());
     
-    if (selectedTask.scheduledDate !== todayStr) {
+    if (selectedTask.scheduleDate !== todayStr) {
       showToast("다른 날짜의 일정은 추가 할 수 없습니다.");
       return;
     }
@@ -329,8 +329,8 @@ export default function Weekly() {
     if (filterOption === '마감 임박순') {
       if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
       
-      if (a.scheduledDate !== b.scheduledDate) {
-        return new Date(a.scheduledDate) - new Date(b.scheduledDate);
+      if (a.scheduleDate !== b.scheduleDate) {
+        return new Date(a.scheduleDate) - new Date(b.scheduleDate);
       }
       
       const hasTimeA = a.startTime !== null && a.endTime !== null;
@@ -382,7 +382,7 @@ export default function Weekly() {
                   const isToday = day.fullDateObj.getTime() === today.getTime();
                   const isFuture = day.fullDateObj.getTime() > today.getTime();
                   
-                  const daySchedules = schedules.filter(s => s.scheduledDate === day.dateStr);
+                  const daySchedules = schedules.filter(s => s.scheduleDate === day.dateStr);
                   const total = daySchedules.length;
                   const completed = daySchedules.filter(s => s.isCompleted).length;
                   const percentage = total > 0 ? (completed / total) * 100 : 0;
@@ -522,7 +522,7 @@ export default function Weekly() {
                     <rect x="1" y="2" width="10" height="9" rx="1" stroke="#4C4C4C" strokeWidth="1.2"/>
                     <path d="M3 0V4M9 0V4M1 5H11" stroke="#4C4C4C" strokeWidth="1.2"/>
                   </svg>
-                  <span>{selectedTask.scheduledDate} {selectedTask.startTime && `| ${selectedTask.startTime.slice(0,5)}`}</span>
+                  <span>{selectedTask.scheduleDate} {selectedTask.startTime && `| ${selectedTask.startTime.slice(0,5)}`}</span>
                 </div>
               </div>
 
