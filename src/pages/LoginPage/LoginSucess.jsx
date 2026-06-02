@@ -7,7 +7,7 @@ export default function LoginSuccess() {
   const isFetched = useRef(false);
 
   useEffect(() => {
-    if (isFetched.current) return; 
+    if (isFetched.current) return;
     isFetched.current = true;
 
     const fetchToken = async () => {
@@ -19,46 +19,49 @@ export default function LoginSuccess() {
           headers: {
             "Content-Type": "application/json",
           },
-          // 백엔드 요구사항에 따라 빈 객체를 전달합니다.
-          body: JSON.stringify({}), 
-          // axios의 withCredentials: true와 동일한 역할 (쿠키 포함)
-          credentials: "include", 
+          body: JSON.stringify({}),
+          credentials: "include", // 쿠키를 포함시켜 보냄
         });
 
         console.log(`[LoginSuccess] 백엔드 응답 수신 - HTTP 상태 코드: ${response.status}`);
 
-        // 분기 1: HTTP 상태 코드가 200~299 사이가 아닌 경우 (에러 발생)
+        // 1. HTTP 상태 코드에 따른 에러 분류
         if (!response.ok) {
+          let errorCode = 8; // 기본값: 알 수 없는 HTTP 오류
+          
           if (response.status === 401) {
-            console.error("[LoginSuccess Error] 401 Unauthorized: 쿠키(refresh_token)가 브라우저에 없거나 만료되었습니다.");
+            console.error("[LoginSuccess Error] 401: 브라우저가 쿠키를 유실했거나 만료되었습니다.");
+            errorCode = 2; // 쿠키 유실 의심
           } else if (response.status === 403) {
-            console.error("[LoginSuccess Error] 403 Forbidden: 접근 권한이 거부되었습니다.");
+            console.error("[LoginSuccess Error] 403: 권한 거부.");
+            errorCode = 3;
           } else if (response.status === 404) {
-            console.error("[LoginSuccess Error] 404 Not Found: 백엔드 API 엔드포인트 주소가 잘못되었습니다.");
+            console.error("[LoginSuccess Error] 404: 잘못된 API 주소.");
+            errorCode = 4;
           } else if (response.status >= 500) {
-            console.error("[LoginSuccess Error] 5xx Server Error: 백엔드 서버 내부 에러입니다.");
-          } else {
-            console.error(`[LoginSuccess Error] 알 수 없는 HTTP 에러: ${response.status}`);
+            console.error("[LoginSuccess Error] 5xx: 백엔드 서버 내부 에러.");
+            errorCode = 5;
           }
-          // catch 블록으로 에러 처리를 넘김
-          throw new Error(`HTTP 요청 실패 (상태 코드: ${response.status})`); 
+
+          // 커스텀 에러 객체를 던져 catch 블록에서 처리하게 함
+          throw { message: `HTTP 상태 코드 에러: ${response.status}`, code: errorCode };
         }
 
-        // 분기 2: 백엔드 응답이 올바른 JSON 형식이 아닌 경우 (예: HTML 에러 페이지가 반환됨)
+        // 2. JSON 파싱 검증
         let data;
         try {
           data = await response.json();
         } catch (parseError) {
-          console.error("[LoginSuccess Error] JSON 파싱 실패: 백엔드에서 JSON이 아닌 형식(텍스트, HTML 등)을 반환했습니다.", parseError);
-          throw new Error("JSON 파싱 에러");
+          console.error("[LoginSuccess Error] JSON 파싱 실패:", parseError);
+          throw { message: "JSON 파싱 에러", code: 6 };
         }
 
         const { accessToken, user } = data;
 
-        // 분기 3: JSON 응답은 정상이나, 필요한 데이터(Token, User)가 누락된 경우
+        // 3. 필수 데이터 누락 검증
         if (!accessToken || !user) {
-          console.error("[LoginSuccess Error] 데이터 누락: 응답에 accessToken 또는 user 객체가 없습니다.", data);
-          throw new Error("필수 데이터 누락");
+          console.error("[LoginSuccess Error] 데이터 누락:", data);
+          throw { message: "필수 데이터 누락", code: 7 };
         }
 
         console.log("[LoginSuccess] 토큰 및 유저 데이터 추출 성공!", { user });
@@ -68,18 +71,29 @@ export default function LoginSuccess() {
         localStorage.setItem("user", JSON.stringify(user));
 
         console.log("[LoginSuccess] 로컬 스토리지 저장 완료. 메인 페이지로 이동합니다.");
-        navigate("/");
+        navigate("/", { replace: true });
 
       } catch (error) {
-        // 분기 4: 네트워크 단절, CORS 에러, 또는 위에서 throw한 예외들이 모두 여기로 모입니다.
-        console.error("[LoginSuccess Exception] 최종 에러 감지 (네트워크 문제, CORS, 또는 HTTP 처리 중단):", error);
-        alert("로그인에 실패했습니다. 다시 시도해주세요.");
+        console.error("[LoginSuccess Exception] 에러 포착:", error);
+
+        // throw로 던진 커스텀 에러 객체(code가 존재함)인지, 
+        // fetch 자체가 실패한 네트워크/CORS 에러(Native Error)인지 판별
+        const finalErrorCode = error.code ? error.code : 1; 
+
+        // 유저에게 에러 코드를 포함하여 알림창 노출
+        alert(`로그인에 실패했습니다. 다시 시도해주세요.\n(error code : ${finalErrorCode})`);
+        
         navigate("/login", { replace: true });
       }
     };
 
-    fetchToken();
-  }, [navigate]);
+    // 솔루션 적용: 브라우저가 리다이렉트 직후 쿠키를 디스크/메모리에 
+    // 완전히 기록할 미세한 시간을 벌어주기 위한 Race Condition 방어 로직 (500ms 지연)
+    setTimeout(() => {
+      fetchToken();
+    }, 500);
+
+  }, [navigate, BASE_URL]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
