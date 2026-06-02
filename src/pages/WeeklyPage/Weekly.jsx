@@ -365,11 +365,12 @@ export default function Weekly() {
             <section className={styles['calendar-strip']}>
               <div className={styles['calendar-header']}>
                 <h2 className={styles['week-title']}>{currentWeekStr}</h2>
-                <div className={styles['chevron-down-icon']}>
+                {/*2차때 논의할지도
+                  <div className={styles['chevron-down-icon']}>
                   <svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L8 8L15 1" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </div>
+                </div> */}
               </div>
               
               <hr className={styles['calendar-divider']} />
@@ -613,8 +614,10 @@ export default function Weekly() {
                     <label>메모</label>
                     <input 
                       type="text" 
-                      placeholder={newSchedule.memo ? newSchedule.memo : "메모를 입력해주세요."} 
+                      placeholder="메모를 입력해주세요." 
+                      value={newSchedule.memo} // placeholder 대신 value에 메모 데이터 바인딩
                       className={styles['input-basic']}
+                      style={{ color: '#4C4C4C' }} // 입력된 텍스트 색상을 #4c4c4c로 강제 지정
                       onClick={() => setIsMemoModalOpen(true)}
                       readOnly
                     />
@@ -716,7 +719,7 @@ export default function Weekly() {
                       </div>
                     </div>
 
-                    {/* FLEXIBLE 선택 가능 필드: 시작/종료 시간 */}
+                    {/* FLEXIBLE 선택 가능 필드: 시작/종료 시간
                     <div className={styles['form-row']}>
                       <div className={styles['form-group-half']}>
                         <label>시작 시간 (선택)</label>
@@ -749,7 +752,7 @@ export default function Weekly() {
                           </svg>
                         </div>
                       </div>
-                    </div>
+                    </div>*/}
                   </>
                 )}
               </div>
