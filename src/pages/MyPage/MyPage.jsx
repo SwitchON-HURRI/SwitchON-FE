@@ -212,7 +212,7 @@ export default function MyPage() {
 
   const handleAddCategory = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const popoverHeight = 76; 
+    const popoverHeight = 86; // 버튼 추가로 인한 높이 조정
     
     setAddPopoverStyle({
       position: 'fixed',
@@ -289,53 +289,64 @@ export default function MyPage() {
     }
   };
 
-  const handleAddSubmit = async (e) => {
-    if (e.key === 'Enter') {
-      if (newCategoryName.trim() === '') return; 
-      
-      const token = localStorage.getItem('accessToken');
-      
-      try {
-        const createRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/create`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            categoryName: newCategoryName,
-            categoryColor: newCategoryColor
-          }),
-        });
+  // --- 추가된 핵심 로직 함수 ---
+  const executeAddCategory = async () => {
+    if (newCategoryName.trim() === '') return; 
+    
+    const token = localStorage.getItem('accessToken');
+    
+    try {
+      const createRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          categoryName: newCategoryName,
+          categoryColor: newCategoryColor
+        }),
+      });
 
-        if (!createRes.ok) throw new Error("Category Create API Network Error");
+      if (!createRes.ok) throw new Error("Category Create API Network Error");
 
-        setIsAddPopoverOpen(false);
-        setNewCategoryName('');
-        setNewCategoryColor(COLOR_PALETTE[2]);
+      setIsAddPopoverOpen(false);
+      setNewCategoryName('');
+      setNewCategoryColor(COLOR_PALETTE[2]);
 
-        const readRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/read`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (readRes.ok) {
-          const categoryData = await readRes.json();
-          const formattedCategories = categoryData.map(cat => ({
-            id: cat.categoryId,
-            name: cat.categoryName,
-            color: cat.categoryColor,
-          }));
-          setCategories(formattedCategories || []);
+      const readRes = await fetch(`${import.meta.env.VITE_SERVER_DOMAIN}/category/read`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
+      });
 
-      } catch (error) {
-        console.error('Category Creation or Fetch Failed', error);
+      if (readRes.ok) {
+        const categoryData = await readRes.json();
+        const formattedCategories = categoryData.map(cat => ({
+          id: cat.categoryId,
+          name: cat.categoryName,
+          color: cat.categoryColor,
+        }));
+        setCategories(formattedCategories || []);
       }
+
+    } catch (error) {
+      console.error('Category Creation or Fetch Failed', error);
     }
+  };
+
+  // 기존 엔터 키 이벤트 핸들러
+  const handleAddSubmit = (e) => {
+    if (e.key === 'Enter') {
+      executeAddCategory();
+    }
+  };
+
+  // 새로운 버튼 클릭 이벤트 핸들러
+  const handleAddButtonClick = () => {
+    executeAddCategory();
   };
 
   const handleDeleteTrigger = (id) => {
@@ -523,20 +534,11 @@ export default function MyPage() {
                   </div>
                 )}
               </div>
-{/*2차 MVP}
-              <div className={`${styles['summary-block']} ${styles['switch-block']}`}>
-                <h3 className={styles['block-title']}>이번 주 스위치가 얼마나 켜졌나요?</h3>
-                <div className={styles['dot-indicators']}>
-                  {summaryData.switchDays.map((isActive, i) => (
-                    <div key={`switch-${i}`} className={`${styles.dot} ${isActive ? styles['dot-active'] : styles['dot-inactive']}`} />
-                  ))}
-                </div>
-              </div> */}
             </div>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles['section-title']}>카테고리 편집</h2>
+            <h2 className={styles['section-title']}>카테고 편집</h2>
             <div className={`${styles.card} ${styles['category-card']}`}>
               <h3 className={styles['block-title']}>카테고리 목록</h3>
               
@@ -590,7 +592,6 @@ export default function MyPage() {
               삭제
             </span>
           </div>
-          {/* 🌟 기존 wrapper 제거하고 input에 직접 스타일 적용 🌟 */}
           <input 
             type="text" 
             className={styles['edit-input']} 
@@ -636,7 +637,15 @@ export default function MyPage() {
           className={styles['add-popover']} 
           style={addPopoverStyle}
         >
-          <span className={styles['add-title']}>카테고리 추가</span>
+          <div className={styles['add-header-row']}>
+            <span className={styles['add-title']}>카테고리 추가</span>
+            <button 
+              className={styles['add-submit-action-btn']}
+              onClick={handleAddButtonClick} // 분리된 핸들러 연결
+            >
+              추가
+            </button>
+          </div>
           <div className={styles['add-row']}>
             
             <div className={styles['add-color-selector-wrapper']}>
@@ -668,21 +677,20 @@ export default function MyPage() {
               )}
             </div>
 
-            {/* 🌟 기존 wrapper 제거하고 input에 직접 스타일 적용 🌟 */}
             <input 
               type="text" 
               className={styles['add-input']} 
               placeholder="이름을 입력하세요"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              onKeyDown={handleAddSubmit}
+              onKeyDown={handleAddSubmit} // 기존 엔터 핸들러
               autoFocus
             />
           </div>
         </div>
       )}
 
-      {/* 4. 카테고리 삭제 모달 (전체 화면 Overlay) */}
+      {/* 4. 카테고리 삭제 모달 */}
       {deletingCategoryId && (
         <div className={styles['delete-modal-overlay']} onClick={handleCancelDelete}>
           <div 

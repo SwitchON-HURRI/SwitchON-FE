@@ -390,7 +390,7 @@
 /* 카테고리 추가 팝오버 */
 .add-popover {
   width: 337px;
-  height: 76px;
+  height: 86px; /* 추가 버튼 확보를 위해 높이 소폭 증가 */
   background-color: #FFFFFF;
   border-radius: 30px;
   box-shadow: 4px 4px 10px 0px rgba(0, 0, 0, 0.1);
@@ -403,6 +403,14 @@
   align-items: flex-start;
 }
 
+/* 추가된 버튼과 타이틀을 묶는 헤더 로우 */
+.add-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .add-title {
   font-family: "Pretendard", -apple-system, sans-serif;
   font-size: 12px;
@@ -410,6 +418,28 @@
   line-height: 14px;
   color: #4C4C4C;
   margin: 0;
+}
+
+/* 새롭게 추가된 우상단 '추가' 버튼 스타일 */
+.add-submit-action-btn {
+  display: flex;
+  width: 42px;
+  height: 26px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: #4C4C4C; /* var(--TEXT, #4C4C4C) 대체 */
+  color: #D7D7D7; /* 텍스트 시인성을 위해 컬러 지정 */
+  border: none;
+  cursor: pointer;
+  
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
 }
 
 .add-row {
