@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function LoginSuccess() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // URL의 쿼리 파라미터를 읽기 위한 훅
   const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
   const isFetched = useRef(false);
 
@@ -10,22 +11,33 @@ export default function LoginSuccess() {
     if (isFetched.current) return;
     isFetched.current = true;
 
-    const fetchToken = async () => {
-      console.log("[LoginSuccess] 토큰 발급 프로세스 시작...");
+    const exchangeToken = async () => {
+      console.log("[LoginSuccess] 토큰 교환 프로세스 시작...");
+      
+      // 1. URL에서 백엔드가 넘겨준 1회용 code 읽기
+      const code = searchParams.get("code");
+
+      if (!code) {
+        console.error("[LoginSuccess Error] URL에 code 파라미터가 없습니다.");
+        alert("잘못된 접근입니다. 다시 로그인해주세요.");
+        navigate("/login", { replace: true });
+        return;
+      }
 
       try {
-        const response = await fetch(`${BASE_URL}/auth/refresh`, {
+        // 2. /auth/exchange로 code 전송
+        const response = await fetch(`${BASE_URL}/auth/exchange`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}),
-          credentials: "include", // 쿠키를 포함시켜 보냄
+          body: JSON.stringify({ code }), // 1회용 코드를 바디에 담아 전송
+          credentials: "include", // 교환 완료 후 백엔드가 refresh cookie를 세팅할 수 있도록 유지
         });
 
         console.log(`[LoginSuccess] 백엔드 응답 수신 - HTTP 상태 코드: ${response.status}`);
 
-        // 1. HTTP 상태 코드 및 백엔드 요구사항에 따른 에러 분류
+        // 3. HTTP 상태 코드 및 백엔드 요구사항에 따른 에러 분류
         if (!response.ok) {
           let errorCode = 8; 
           let backendErrorMsg = "";
@@ -43,19 +55,10 @@ export default function LoginSuccess() {
             }
           }
 
-          // 상태 코드 분기 및 백엔드가 요청한 에러 텍스트 매핑
+          // 상태 코드 분기 (기존의 상세 에러 로직 유지)
           if (response.status === 401) {
             errorCode = 2;
-            // 대소문자 구분 없이 비교하기 위해 소문자로 변환하여 체크
-            const lowerMsg = backendErrorMsg.toLowerCase();
-            
-            if (lowerMsg.includes("required")) {
-              displayReason = "쿠키가 아예 안 붙은 것 (Refresh token is required)";
-            } else if (lowerMsg.includes("recognized")) {
-              displayReason = "토큰 회전/기존 쿠키 문제 (Refresh token was not recognized)";
-            } else {
-              displayReason = `401 기타 에러: ${backendErrorMsg}`;
-            }
+            displayReason = `401 Unauthorized: 인증 코드가 만료되었거나 유효하지 않습니다. (${backendErrorMsg})`;
           } else if (response.status === 400) {
             errorCode = 9;
             displayReason = `400 Bad Request: ${backendErrorMsg}`;
@@ -74,13 +77,10 @@ export default function LoginSuccess() {
           }
 
           // 분기 처리된 내용을 담아 catch 블록으로 던짐
-          throw { 
-            code: errorCode, 
-            reason: displayReason 
-          };
+          throw { code: errorCode, reason: displayReason };
         }
 
-        // 2. 정상 응답일 경우 JSON 파싱
+        // 4. 정상 응답일 경우 JSON 파싱
         let data;
         try {
           data = await response.json();
@@ -91,7 +91,7 @@ export default function LoginSuccess() {
 
         const { accessToken, user } = data;
 
-        // 3. 필수 데이터 누락 검증
+        // 5. 필수 데이터 누락 검증
         if (!accessToken || !user) {
           console.error("[LoginSuccess Error] 데이터 누락:", data);
           throw { code: 7, reason: "필수 데이터 누락 (accessToken 또는 user 없음)" };
@@ -125,12 +125,10 @@ export default function LoginSuccess() {
       }
     };
 
-    // Race Condition 방어 로직 (500ms 지연)
-    setTimeout(() => {
-      fetchToken();
-    }, 500);
+    // 지연 시간 없이 즉시 실행
+    exchangeToken();
 
-  }, [navigate, BASE_URL]);
+  }, [navigate, BASE_URL, searchParams]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
