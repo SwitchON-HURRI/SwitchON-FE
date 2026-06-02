@@ -5,8 +5,8 @@ import locationIcon from "../../assets/icon/location.svg";
 import dateIcon from "../../assets/icon/date.svg";
 import timeIcon from "../../assets/icon/time.svg";
 import addIcon from "../../assets/icon/add-3.svg";
-import deleteIcon from "../../assets/icon/fi-rr-trash.svg";
 import ConfirmModal from "./ConfirmModal.jsx";
+import deleteIcon from "../../assets/icon/fi-rr-trash.svg";
 import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
 export default function ScheduleDetailModal({
