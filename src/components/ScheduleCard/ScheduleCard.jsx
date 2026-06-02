@@ -89,20 +89,22 @@ export default function ScheduleCard({
               </div>
               {isFixed && <img src={fixed} alt="고정 아이콘" />}
             </div>
-            <div className={styles.importance}>
-              {Array.from({ length: importance }, (_, i) => (
-                <div
-                  key={`active-${i}`}
-                  className={styles.importanceDotActive}
-                />
-              ))}
-              {Array.from({ length: 5 - importance }, (_, i) => (
-                <div
-                  key={`inactive-${i}`}
-                  className={styles.importanceDotInactive}
-                />
-              ))}
-            </div>
+            {!isFixed && importance && (
+              <div className={styles.importance}>
+                {Array.from({ length: importance }, (_, i) => (
+                  <div
+                    key={`active-${i}`}
+                    className={styles.importanceDotActive}
+                  />
+                ))}
+                {Array.from({ length: 5 - importance }, (_, i) => (
+                  <div
+                    key={`inactive-${i}`}
+                    className={styles.importanceDotInactive}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <div className={styles.detailContainer}>
             {location && (

@@ -261,6 +261,10 @@ export default function ManageSchedule() {
                   setIsDetailModalOpen(false);
                   setSelectedSchedule(null);
                 }}
+                onAdded={() => {
+                  setIsDetailModalOpen(false);
+                  navigate("/today", { state: { openSleepModal: true } });
+                }}
                 onDelete={() => {
                   fetchCategoriesWithSchedules();
                   setIsDetailModalOpen(false);

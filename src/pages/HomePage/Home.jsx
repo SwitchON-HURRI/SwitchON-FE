@@ -6,7 +6,7 @@ import switchBtn from "../../assets/switch.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
 import SleepTimeModal from "../../components/Modal/SleepTimeModal.jsx";
-import TodayScheduleListModal from "../../components/Modal/TodayScheduleListModal.jsx";
+import TodayDateListModal from "../../components/Modal/TodayDateListModal.jsx";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export default function Home() {
 
   const [selectedState, setSelectedState] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isTodayListModalOpen, setIsTodayListModalOpen] = useState(false);
+  const [isTodayDateListModalOpen, setIsTodayDateListModalOpen] = useState(false);
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [todayDateSchedules, setTodayDateSchedules] = useState([]);
 
@@ -62,46 +62,43 @@ export default function Home() {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      // 1. 상태 생성
       const stateResponse = await fetch(`${BASE_URL}/state/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          condition: selectedState,
-        }),
+        body: JSON.stringify({ condition: selectedState }),
         credentials: "include",
       });
 
-      if (!stateResponse.ok) {
+      if (!stateResponse.ok)
         throw new Error(`state 생성 실패: ${stateResponse.status}`);
-      }
 
-      // 2. 자동배치
       const planResponse = await fetch(`${BASE_URL}/today-schedule/plan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          sleepTime,
-        }),
+        body: JSON.stringify({ sleepTime }),
         credentials: "include",
       });
 
-      if (!planResponse.ok) {
+      if (!planResponse.ok)
         throw new Error(`plan 실패: ${planResponse.status}`);
-      }
+
+      // plan 응답 localStorage에 저장
+      const planData = await planResponse.json();
+      console.log("planData:", planData);
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem("planResult", JSON.stringify(planData));
+      localStorage.setItem("planDate", today);
 
       setIsSleepModalOpen(false);
-
       navigate("/today");
     } catch (error) {
       console.error(error);
-
       alert("오늘 하루 시작에 실패했습니다.");
     }
   };
@@ -179,7 +176,7 @@ export default function Home() {
               alert("담을 일정이 없습니다.");
               return;
             }
-            setIsTodayListOpen(true);
+            setIsTodayDateListModalOpen(true);
           }}
         >
           <span>
@@ -203,9 +200,9 @@ export default function Home() {
           />
         )}
 
-        {isTodayListModalOpen && (
-          <TodayScheduleListModal
-            onClose={() => setIsTodayListModalOpen(false)}
+        {isTodayDateListModalOpen && (
+          <TodayDateListModal
+            onClose={() => setIsTodayDateListModalOpen(false)}
           />
         )}
       </div>

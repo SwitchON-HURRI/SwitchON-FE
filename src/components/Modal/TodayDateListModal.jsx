@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import styles from "./ScheduleListModal.module.css";
+import styles from "./TodayDateListModal.module.css";
 
-export default function TodayScheduleListModal({ date, onClose, onAdded }) {
+export default function TodayDateListModal({ date, onClose, onAdded }) {
   const [scheduleList, setScheduleList] = useState([]);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
@@ -9,6 +9,7 @@ export default function TodayScheduleListModal({ date, onClose, onAdded }) {
   const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
   const [categoryMap, setCategoryMap] = useState({});
   const [todayScheduleIds, setTodayScheduleIds] = useState([]);
+  const [completedScheduleIds, setCompletedScheduleIds] = useState([]);
 
   useEffect(() => {
     fetchSchedules();
@@ -25,6 +26,10 @@ export default function TodayScheduleListModal({ date, onClose, onAdded }) {
       });
       const data = await res.json();
       setTodayScheduleIds(data.map((item) => item.scheduleId));
+      // 완료된 일정 scheduleId만 따로 저장
+      setCompletedScheduleIds(
+        data.filter((item) => item.isCompleted).map((item) => item.scheduleId),
+      );
     } catch (err) {
       console.error(err);
     }
@@ -73,7 +78,7 @@ export default function TodayScheduleListModal({ date, onClose, onAdded }) {
       );
 
       if (!res.ok) throw new Error("오늘 일정 추가 실패");
-      
+
       onAdded?.();
       onClose();
     } catch (err) {
@@ -119,21 +124,25 @@ export default function TodayScheduleListModal({ date, onClose, onAdded }) {
         </div>
 
         <div className={styles.scheduleList}>
-          {scheduleList.map((schedule) => (
-            <div
-              key={schedule.scheduleId}
-              className={styles.scheduleItem}
-              onClick={() => handleScheduleClick(schedule)}
-            >
-              <span className={styles.scheduleText}>{schedule.title}</span>
+          {scheduleList
+            .filter(
+              (schedule) => !completedScheduleIds.includes(schedule.scheduleId),
+            )
+            .map((schedule) => (
               <div
-                className={styles.categoryDot}
-                style={{
-                  backgroundColor: categoryMap[schedule.categoryId],
-                }}
-              />
-            </div>
-          ))}
+                key={schedule.scheduleId}
+                className={styles.scheduleItem}
+                onClick={() => handleScheduleClick(schedule)}
+              >
+                <span className={styles.scheduleText}>{schedule.title}</span>
+                <div
+                  className={styles.categoryDot}
+                  style={{
+                    backgroundColor: categoryMap[schedule.categoryId],
+                  }}
+                />
+              </div>
+            ))}
         </div>
       </div>
     </div>

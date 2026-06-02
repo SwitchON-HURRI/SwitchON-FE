@@ -65,7 +65,7 @@ export default function ScheduleDetailModal({
 
   const handleAddTodaySchedule = async () => {
     if (todayScheduleIds.includes(scheduleId)) {
-      alert("이미 오늘 일정에 추가됐거나 완료된 일정입니다.");
+      alert("이미 오늘 일정에 담겼거나 완료된 일정입니다.");
       setIsConfirmOpen(false);
       return;
     }
@@ -91,7 +91,7 @@ export default function ScheduleDetailModal({
 
       onAdded?.(); // Today 목록 새로고침
 
-      alert("오늘 일정에 추가되었습니다.");
+      alert("오늘 일정에 담겼습니다.");
       onClose();
     } catch (error) {
       console.error("오늘 일정 추가 실패:", error);
@@ -179,7 +179,7 @@ export default function ScheduleDetailModal({
                 onClick={() => setIsConfirmOpen(true)}
               >
                 <img src={addIcon} alt="추가 아이콘" />
-                <span>오늘 일정에 추가</span>
+                <span>오늘 일정에 담기</span>
               </div>
             )}
           </div>
@@ -213,7 +213,7 @@ export default function ScheduleDetailModal({
         <ConfirmModal
           onClose={() => setIsConfirmOpen(false)}
           onConfirm={handleAddTodaySchedule}
-          text="오늘 일정에 추가하시겠습니까?"
+          text="오늘 일정에 담으시겠습니까?"
         />
       )}
       {isDeleteConfirmOpen && (
