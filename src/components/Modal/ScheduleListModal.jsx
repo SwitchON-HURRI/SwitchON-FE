@@ -1,30 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./ScheduleListModal.module.css";
 import filter from "../../assets/icon/filter.svg";
 import add from "../../assets/icon/add-2.svg";
 import ScheduleDetailModal from "./ScheduleDetailModal.jsx";
+import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
-export default function Modal({ date, onClose }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [eventData, setEventData] = useState([]);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const today = new Date();
-  const formattedDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
 
-  const dummySchedule = {
-    isFixed: false,
-    title: "오픽 공부하기",
-    category: { color: "#F4ECC8", name: "공부" },
-    importance: 3,
-    date: formattedDate,
-    time: null,
-    location: "집",
-    des: "집에서 공부하기",
+export default function ScheduleListModal({ date, onClose }) {
+  const selectedDate = date ? new Date(date) : new Date();
+  const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
+  const yyyy = selectedDate.getFullYear();
+  const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(selectedDate.getDate()).padStart(2, "0");
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  const [scheduleList, setScheduleList] = useState([]);
+  const [categoryMap, setCategoryMap] = useState({});
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const fetchSchedules = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const res = await fetch(
+        `${BASE_URL}/schedule/read/date?date=${dateStr}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        },
+      );
+      const data = await res.json();
+      setScheduleList(data);
+    } catch (err) {
+      console.error("일정 조회 실패:", err);
+    }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
+  const fetchCategories = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const res = await fetch(`${BASE_URL}/category/read`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+      const map = {};
+      data.forEach((c) => {
+        map[c.categoryId] = { color: c.categoryColor, name: c.categoryName };
+      });
+      setCategoryMap(map);
+    } catch (err) {
+      console.error("카테고리 조회 실패:", err);
+    }
   };
+
+  useEffect(() => {
+    fetchSchedules();
+    fetchCategories();
+  }, []);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -35,40 +69,66 @@ export default function Modal({ date, onClose }) {
             <div className={styles.icon}>
               <img src={filter} alt="filter" />
             </div>
-            <div className={styles.icon}>
+            <div
+              className={styles.icon}
+              onClick={() => setIsAddModalOpen(true)}
+            >
               <img src={add} alt="add" />
             </div>
           </div>
         </div>
         <div className={styles.scheduleList}>
-          <div className={styles.scheduleItem} onClick={() => setIsDetailOpen(true)}>
-            <span className={styles.scheduleText}>오픽 공부하기</span>
+          {scheduleList.map((schedule) => (
             <div
-              className={styles.categoryDot}
-              style={{ backgroundColor: "#F4ECC8" }}
-            ></div>
-          </div>
-          <div className={styles.scheduleItem}>
-            <span className={styles.scheduleText}>유튜브 편집하기</span>
-            <div
-              className={styles.categoryDot}
-              style={{ backgroundColor: "#CFD6C6" }}
-            ></div>
-          </div>
-          <div className={styles.scheduleItem}>
-            <span className={styles.scheduleText}>알바(고정)</span>
-            <div
-              className={styles.categoryDot}
-              style={{ backgroundColor: "#EEDBDF" }}
-            ></div>
-          </div>
+              key={schedule.scheduleId}
+              className={styles.scheduleItem}
+              onClick={() => setSelectedSchedule(schedule)}
+            >
+              <span className={styles.scheduleText}>{schedule.title}</span>
+              <div
+                className={styles.categoryDot}
+                style={{
+                  backgroundColor: categoryMap[schedule.categoryId]?.color,
+                }}
+              />
+            </div>
+          ))}
         </div>
       </div>
-      {isDetailOpen && (
+
+      {selectedSchedule && (
         <ScheduleDetailModal
-          {...dummySchedule}
-          onEdit={() => setIsDetailOpen(false)}
-          onClose={() => setIsDetailOpen(false)}
+          scheduleId={selectedSchedule.scheduleId}
+          isFixed={selectedSchedule.scheduleType === "FIXED"}
+          title={selectedSchedule.title}
+          category={{
+            color: categoryMap[selectedSchedule.categoryId]?.color,
+            name: categoryMap[selectedSchedule.categoryId]?.name,
+          }}
+          importance={selectedSchedule.importance}
+          date={selectedSchedule.scheduleDate}
+          time={
+            selectedSchedule.startTime && selectedSchedule.endTime
+              ? `${selectedSchedule.startTime.slice(0, 5)}-${selectedSchedule.endTime.slice(0, 5)}`
+              : null
+          }
+          location={selectedSchedule.location}
+          memo={selectedSchedule.memo}
+          onEdit={() => setSelectedSchedule(null)}
+          onClose={() => setSelectedSchedule(null)}
+          onDelete={() => {
+            fetchSchedules();
+            setSelectedSchedule(null);
+          }}
+        />
+      )}
+
+      {isAddModalOpen && (
+        <AddEditScheduleModal
+          onClose={() => {
+            setIsAddModalOpen(false);
+            fetchSchedules();
+          }}
         />
       )}
     </div>

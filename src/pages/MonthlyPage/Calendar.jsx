@@ -1,28 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 
-const eventData = [
-  { start: "2025-03-02", end: "2025-03-02", color: "#D4E4F1" },
-  { start: "2025-03-02", end: "2025-03-02", color: "#F4ECC8" },
-  { start: "2025-03-04", end: "2025-03-05", color: "#D4E4F1" },
-  { start: "2025-03-04", end: "2025-03-04", color: "#F4ECC8" },
-  { start: "2025-03-04", end: "2025-03-04", color: "#DBD4DC" },
-  { start: "2025-03-04", end: "2025-03-04", color: "#CFD6C6" },
-  { start: "2025-03-09", end: "2025-03-13", color: "#CFD6C6" },
-  { start: "2025-03-11", end: "2025-03-13", color: "#EEDBDF" },
-  { start: "2025-03-12", end: "2025-03-12", color: "#F4ECC8" },
-  { start: "2025-03-12", end: "2025-03-12", color: "#D4E4F1" },
-  { start: "2025-03-16", end: "2025-03-17", color: "#D4E4F1" },
-  { start: "2025-03-16", end: "2025-03-17", color: "#D4E4F1" },
-  { start: "2025-03-20", end: "2025-03-20", color: "#F4ECC8" },
-  { start: "2025-03-24", end: "2025-03-26", color: "#CFD6C6" },
-  { start: "2025-03-25", end: "2025-03-25", color: "#EEDBDF" },
-  { start: "2025-03-30", end: "2025-03-30", color: "#D4E4F1" },
-  { start: "2025-03-30", end: "2025-03-30", color: "#F4ECC8" },
-  { start: "2025-03-30", end: "2025-03-30", color: "#DBD4DC" },
-];
+const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
 
 function formatKey(date) {
   const y = date.getFullYear();
@@ -31,7 +12,7 @@ function formatKey(date) {
   return `${y}-${m}-${d}`;
 }
 
-function EventBars({ date }) {
+function EventBars({ date, eventData }) {
   const key = formatKey(date);
   const dayEvents = eventData.filter((ev) => ev.start <= key && ev.end >= key);
 
@@ -60,17 +41,76 @@ function EventBars({ date }) {
 }
 
 export default function CalendarComponent({ onDateClick }) {
-  const [value, setValue] = useState(new Date(2025, 2, 4));
-  
+  const [value, setValue] = useState(new Date());
+  const [eventData, setEventData] = useState([]);
+  const [categoryMap, setCategoryMap] = useState({});
+
+  // 카테고리 fetch
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      const res = await fetch(`${BASE_URL}/category/read`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+      const map = {};
+      data.forEach((c) => {
+        map[c.categoryId] = c.categoryColor;
+      });
+      setCategoryMap(map);
+    };
+    fetchCategories();
+  }, []);
+
+  // 월별 일정 fetch
+  const fetchMonthSchedules = async (date) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const startDate = `${y}-${m}-01`;
+    const lastDay = new Date(y, date.getMonth() + 1, 0).getDate();
+    const endDate = `${y}-${m}-${lastDay}`;
+
+    const res = await fetch(
+      `${BASE_URL}/schedule/read/range?startDate=${startDate}&endDate=${endDate}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: "include",
+      },
+    );
+    const data = await res.json();
+
+    const events = data.map((schedule) => ({
+      start: schedule.scheduleDate,
+      end: schedule.scheduleDate,
+      color: categoryMap[schedule.categoryId] ?? "#cccccc",
+    }));
+
+    setEventData(events);
+  };
+
+  useEffect(() => {
+    if (Object.keys(categoryMap).length > 0) {
+      fetchMonthSchedules(value);
+    }
+  }, [categoryMap]);
+
   const handleChange = (date) => {
     setValue(date);
-    onDateClick(date); // 날짜 클릭시 부모한테 전달
+    onDateClick(date);
   };
+
+  const handleActiveStartDateChange = ({ activeStartDate }) => {
+    fetchMonthSchedules(activeStartDate);
+  };
+
   return (
     <div className="calendar-wrapper">
       <Calendar
         value={value}
         onChange={handleChange}
+        onActiveStartDateChange={handleActiveStartDateChange}
         locale="ko-KR"
         calendarType="gregory"
         formatMonthYear={(locale, date) => `${date.getMonth() + 1}월`}
@@ -79,7 +119,9 @@ export default function CalendarComponent({ onDateClick }) {
           ["일", "월", "화", "수", "목", "금", "토"][date.getDay()]
         }
         tileContent={({ date, view }) =>
-          view === "month" ? <EventBars date={date} /> : null
+          view === "month" ? (
+            <EventBars date={date} eventData={eventData} />
+          ) : null
         }
         prevLabel={null}
         nextLabel={null}

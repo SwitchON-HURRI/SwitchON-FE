@@ -1,7 +1,6 @@
-import { useState } from "react";
 import styles from "./ConfirmModal.module.css";
 
-export default function Modal({ onClose, text }) {
+export default function ConfirmModal({ onClose, onConfirm, text }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.container} onClick={(e) => e.stopPropagation()}>
@@ -10,7 +9,7 @@ export default function Modal({ onClose, text }) {
           <button className={styles.btn1} onClick={onClose}>
             아니요
           </button>
-          <button className={styles.btn2} onClick={onClose}>
+          <button className={styles.btn2} onClick={onConfirm}>
             예
           </button>
         </div>

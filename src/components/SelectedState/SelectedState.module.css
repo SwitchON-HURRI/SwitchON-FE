@@ -1,0 +1,24 @@
+.selectedStateContainer {
+  display: inline-flex;
+  padding: 10px 17px;
+  align-items: center;
+  gap: 31px;
+  border-radius: 30px;
+  background: #ededed;
+  cursor: pointer;
+}
+
+.selectedStateContainer span {
+  color: #4c4c4c;
+}
+
+.selectedStateBox {
+  display: flex;
+  padding: 6px 11px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #cecece;
+  border-radius: 28px;
+  background: #fff;
+}

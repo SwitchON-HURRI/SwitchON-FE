@@ -1,25 +1,35 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
-import Today from "./pages/Today.jsx";
-import Weekly from "./pages/Weekly.jsx";
+import Home from "./pages/HomePage/Home.jsx";
+import Login from "./pages/LoginPage/Login.jsx";
+import Today from "./pages/TodayPage/Today.jsx";
+import ManageSchedule from "./pages/TodayPage/ManageSchedule.jsx";
+import Weekly from "./pages/WeeklyPage/Weekly.jsx";
 import Monthly from "./pages/MonthlyPage/Monthly.jsx";
-import MyPage from "./pages/MyPage.jsx";
+import MyPage from "./pages/MyPage/MyPage.jsx";
 import Notice from "./pages/Notice.jsx";
-import Setting from "./pages/Setting.jsx";
+import Setting from "./pages/SettingPage/Setting.jsx";
+import LoginSuccess from "./pages/LoginPage/LoginSucess.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* '/' 경로에만 showAlert={false}를 부여하여 조용히 넘어가게 처리 */}
+        <Route path="/" element={<ProtectedRoute showAlert={false}><Home /></ProtectedRoute>} />
+        
         <Route path="/login" element={<Login />} />
-        <Route path="/today" element={<Today />} />
-        <Route path="/weekly" element={<Weekly />} />
-        <Route path="/monthly" element={<Monthly />} />
-        <Route path="/mypage" element={<MyPage />} />
+        
+        {/* 나머지 라우트는 기본값(showAlert=true)이 적용되어 기존 로직 유지 */}
+        <Route path="/today" element={<ProtectedRoute><Today /></ProtectedRoute>} />
+        <Route path="/manage-schedule" element={<ProtectedRoute><ManageSchedule /></ProtectedRoute>} />
+        <Route path="/weekly" element={<ProtectedRoute><Weekly /></ProtectedRoute>} />
+        <Route path="/monthly" element={<ProtectedRoute><Monthly /></ProtectedRoute>} />
+        <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+        
         <Route path="/notice" element={<Notice />} />
         <Route path="/setting" element={<Setting />} />
+        <Route path="/login/success" element={<LoginSuccess />} />
       </Routes>
     </BrowserRouter>
   );

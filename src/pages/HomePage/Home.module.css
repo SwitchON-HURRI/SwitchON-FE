@@ -1,0 +1,74 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding-top: 95px;
+}
+
+.selectStateContainer {
+  display: flex;
+  gap: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.selectStateContainer button {
+  padding: 10px 25px 9px 25px;
+  border-radius: 30px;
+  border: 1px solid #cecece;
+  background: #fff;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.1);
+  color: #000;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ringWrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  background-image: url("../../assets/default-ring.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.switchBtn {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scaleX(-1);
+
+}
+
+.addScheduleBox {
+  display: flex;
+  width: 347px;
+  padding: 30px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 33px;
+  border: 1px dashed #bbb;
+  box-sizing: border-box;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.addScheduleBox span {
+  color: #000;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(114, 114, 114, 0.47);
+  z-index: 1;
+}

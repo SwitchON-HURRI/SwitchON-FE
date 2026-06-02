@@ -1,0 +1,556 @@
+/* 공통 레이아웃 설정 */
+.mobile-wrapper {
+  background-color: #F5F5F5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-container {
+  width: 100%;
+  max-width: 412px;
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+/* 헤더 & GNB */
+.header-section {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px 10px 22px;
+  gap: 16px;
+}
+
+.gnb {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 56px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4C4C4C;
+  margin: 0;
+  line-height: 24px;
+}
+
+.header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.page-title-bar {
+  display: flex;
+  align-items: center;
+  background-color: #FBFBFB;
+  border-radius: 20px;
+  padding: 8px 16px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4C4C4C;
+  line-height: 24px;
+}
+
+/* 메인 콘텐츠 영역 */
+.main-content {
+  padding: 10px 22px 40px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.card {
+  border: 1px solid #E7E7E7;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+}
+
+/* 주간 요약 카드 */
+.summary-card {
+  padding: 27px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.block-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4C4C4C;
+  margin: 0 0 16px 0;
+}
+
+/* --- [첫번째 코드] 주간 요약 전용 CSS 병합 부분 --- */
+.condition-block {
+  position: relative; /* dim 오버레이를 위한 기준점 설정 */
+}
+
+.condition-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.condition-pills {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 250px;
+  height: 56px; /* 중앙 1순위의 고정 최대 높이 제공 */
+}
+
+.pill {
+  position: absolute;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4C4C4C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  transition: all 0.3s ease; /* 부드러운 위치/크기 전환 효과 추가 */
+}
+
+.pill-regular {
+  background-color: #ffebcc; 
+}
+
+.pill-comfort {
+  background-color: #CADAB6;
+}
+
+.pill-hard {
+  background-color: #F29481;
+}
+
+.condition-counts {
+  display: flex;
+  justify-content: space-between;
+  width: 202px;
+  margin-top: 16px;
+}
+
+.count-circle {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #C1C1C1;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #767676;
+}
+
+.dim-overlay {
+  position: absolute;
+  top: -10px; 
+  left: -10px; 
+  right: -10px;
+  bottom: -10px;
+  background-color: rgba(245, 245, 245, 0.85); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 15px; 
+}
+
+.dim-text {
+  color: #000000;
+  font-size: 10px;
+  font-weight: 500;
+}
+/* --- 주간 요약 CSS 병합 종료 --- */
+
+.dot-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.dot-active {
+  background-color: #D9D9D9;
+}
+
+.dot-inactive {
+  background-color: #F2F2F2;
+}
+
+/* 카테고리 편집 카드 */
+.category-card {
+  padding: 27px 25px;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 18px 8px 19px;
+  border: 1px solid #EFEFEF;
+  border-radius: 15px;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.category-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4C4C4C;
+}
+
+.add-category-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border: 1px solid #EFEFEF;
+  border-radius: 15px;
+  color: #A6A6A6;
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+/* --- [두번째 코드] 카테고리 편집 팝오버 CSS 병합 부분 --- */
+.edit-popover {
+  border-radius: 10px 30px 30px 30px;
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  width: 197px;
+  height: 81px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 17px 20px 15px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.edit-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.edit-title {
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.edit-delete-btn {
+  color: #C1C1C1;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px; 
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.edit-input-wrapper {
+  width: 163px;
+  height: 25px;
+  border: 1px solid #E2E2E2;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+  box-sizing: border-box;
+}
+
+.edit-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  color: #4C4C4C;
+  width: 100%;
+}
+
+.edit-input::placeholder {
+  color: #D7D7D7; 
+}
+
+/* 카테고리 색상 변경 팝오버 */
+.color-popover {
+  border-radius: 10px 30px 30px 30px; 
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  width: 197px;
+  height: 72px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 20px 19px 15px; 
+  box-sizing: border-box;
+}
+
+.color-palette {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.color-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.color-circle:active {
+  transform: scale(0.85); 
+}
+
+.small-dots-wrapper {
+  display: flex;
+  gap: 2px;
+}
+
+.small-dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: #D7D7D7;
+}
+
+/* 카테고리 추가 팝오버 */
+.add-popover {
+  width: 337px;
+  height: 76px;
+  background-color: #FFFFFF;
+  border-radius: 30px;
+  box-shadow: 4px 4px 10px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 15px 29px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.add-title {
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  color: #4C4C4C;
+  margin: 0;
+}
+
+.add-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%; 
+}
+
+.add-input-wrapper {
+  width: 257px;
+  height: 25px;
+  border: 1px solid #E2E2E2;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+  box-sizing: border-box;
+}
+
+.add-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  color: #4C4C4C;
+  width: 100%;
+}
+
+.add-input::placeholder {
+  color: #D7D7D7;
+}
+
+/* 카테고리 추가 팝오버 내 색상 선택 */
+.add-color-selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-color-palette-popover {
+  position: absolute;
+  bottom: 24px; 
+  left: -5px; 
+  border-radius: 30px 30px 30px 10px; 
+  border: 1px solid #D7D7D7;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  padding: 10px 15px; 
+  display: flex;
+  align-items: center;
+  z-index: 1001;
+  white-space: nowrap; 
+}
+
+.color-palette-simple {
+  display: flex;
+  align-items: center;
+  gap: 12px; 
+}
+
+/* 카테고리 삭제 확인 모달 */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; 
+}
+
+.delete-modal-container {
+  display: flex;
+  width: 204px;
+  height: 76px;
+  padding: 15px 29px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  border-radius: 30px;
+  background: #FFF;
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.10);
+  box-sizing: border-box; 
+}
+
+.delete-modal-title {
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.delete-btn-row {
+  display: flex;
+  gap: 8px; 
+}
+
+.cancel-btn {
+  display: flex;
+  padding: 6px 11px 7px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  border: 1px solid #E2E2E2;
+  background: transparent;
+  color: #4C4C4C;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.confirm-delete-btn {
+  display: flex;
+  padding: 6px 11px 7px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  border: none;
+  background: #4C4C4C;
+  color: #D7D7D7;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  cursor: pointer;
+}
+/* --- 팝오버 CSS 병합 종료 --- */

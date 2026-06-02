@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Jua&family=Noto+Sans+KR:wght@100..900&display=swap');
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff;
+}
+.title {
+  margin-top: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loginTitleText {
+  font-family: 'Inter', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: #4c4c4c;
+}
+.powerIcon {
+  width: 25px;
+  height: 26px;
+  margin: 0 3px;
+}
+.loginSubtitle {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  color: #4c4c4c;
+  margin-top: 134px;
+}
+.loginButton {
+  margin-top: 20px;
+  background: none;
+  border: none;
+  padding: 0;
+  outline: none;
+  cursor: pointer;
+  border-radius: 30px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
