@@ -25,18 +25,17 @@ export default function LoginSuccess() {
 
         console.log(`[LoginSuccess] 백엔드 응답 수신 - HTTP 상태 코드: ${response.status}`);
 
-        // 1. HTTP 상태 코드에 따른 에러 분류
+        // 1. HTTP 상태 코드 및 백엔드 요구사항에 따른 에러 분류
         if (!response.ok) {
-          let errorCode = 8; // 기본값: 알 수 없는 HTTP 오류
+          let errorCode = 8; 
           let backendErrorMsg = "";
+          let displayReason = "알 수 없는 에러";
 
-          // 🚨 [추가된 로직] 백엔드에서 보내준 에러 상세 사유(body) 파싱
+          // 백엔드 에러 body 파싱
           try {
             const errorData = await response.json();
-            // JSON 형태일 경우 message나 error 필드 추출, 구조를 모를 경우 통째로 문자열화
             backendErrorMsg = errorData.message || errorData.error || JSON.stringify(errorData);
           } catch (e) {
-            // JSON이 아니라 순수 텍스트(String)로 내려올 경우를 대비한 폴백
             try {
               backendErrorMsg = await response.text();
             } catch (e2) {
@@ -44,28 +43,40 @@ export default function LoginSuccess() {
             }
           }
 
-          if (response.status === 400) {
+          // 상태 코드 분기 및 백엔드가 요청한 에러 텍스트 매핑
+          if (response.status === 401) {
+            errorCode = 2;
+            // 대소문자 구분 없이 비교하기 위해 소문자로 변환하여 체크
+            const lowerMsg = backendErrorMsg.toLowerCase();
+            
+            if (lowerMsg.includes("required")) {
+              displayReason = "쿠키가 아예 안 붙은 것 (Refresh token is required)";
+            } else if (lowerMsg.includes("recognized")) {
+              displayReason = "토큰 회전/기존 쿠키 문제 (Refresh token was not recognized)";
+            } else {
+              displayReason = `401 기타 에러: ${backendErrorMsg}`;
+            }
+          } else if (response.status === 400) {
             errorCode = 9;
-          } else if (response.status === 401) {
-            // 콘솔에도 백엔드 메시지 출력
-            console.error(`[LoginSuccess Error] 401: ${backendErrorMsg}`);
-            errorCode = 2; // 쿠키 유실 의심
+            displayReason = `400 Bad Request: ${backendErrorMsg}`;
           } else if (response.status === 403) {
             errorCode = 3;
+            displayReason = `403 Forbidden: ${backendErrorMsg}`;
           } else if (response.status === 404) {
             errorCode = 4;
+            displayReason = "404 API Not Found";
           } else if (response.status === 409) {
             errorCode = 10;
+            displayReason = `409 Conflict: ${backendErrorMsg}`;
           } else if (response.status >= 500) {
             errorCode = 5;
+            displayReason = "5xx 백엔드 서버 에러";
           }
 
-          // 에러 메시지와 상태 코드, 백엔드 상세 사유를 함께 던짐
+          // 분기 처리된 내용을 담아 catch 블록으로 던짐
           throw { 
-            message: `HTTP ${response.status}`, 
             code: errorCode, 
-            status: response.status, 
-            backendMsg: backendErrorMsg 
+            reason: displayReason 
           };
         }
 
@@ -75,7 +86,7 @@ export default function LoginSuccess() {
           data = await response.json();
         } catch (parseError) {
           console.error("[LoginSuccess Error] JSON 파싱 실패:", parseError);
-          throw { message: "JSON 파싱 에러", code: 6 };
+          throw { code: 6, reason: "JSON 파싱 실패" };
         }
 
         const { accessToken, user } = data;
@@ -83,7 +94,7 @@ export default function LoginSuccess() {
         // 3. 필수 데이터 누락 검증
         if (!accessToken || !user) {
           console.error("[LoginSuccess Error] 데이터 누락:", data);
-          throw { message: "필수 데이터 누락", code: 7 };
+          throw { code: 7, reason: "필수 데이터 누락 (accessToken 또는 user 없음)" };
         }
 
         console.log("[LoginSuccess] 토큰 및 유저 데이터 추출 성공!", { user });
@@ -98,21 +109,18 @@ export default function LoginSuccess() {
       } catch (error) {
         console.error("[LoginSuccess Exception] 에러 포착:", error);
 
-        const finalErrorCode = error.code ? error.code : 1; 
+        let alertMsg = `로그인에 실패했습니다. 다시 시도해주세요.\n`;
         
-        // 🚨 [추가된 로직] 유저 캡처용 팝업 메시지 조립
-        let alertMsg = `로그인에 실패했습니다. 다시 시도해주세요.\n(Code : ${finalErrorCode})`;
-        
-        // 커스텀 에러로 던져진 백엔드 메시지가 있다면 추가
-        if (error.backendMsg) {
-          alertMsg += `\nStatus: ${error.status}\nReason: ${error.backendMsg}`;
-        } else if (finalErrorCode === 1) {
-          // 에러 코드가 1(Native 에러)인 경우 CORS나 네트워크 단절로 표기
-          alertMsg += `\nReason: CORS 설정 또는 네트워크 에러`;
+        // 커스텀하게 throw한 에러(HTTP 에러 등)인 경우
+        if (error.reason) {
+          alertMsg += `(Code: ${error.code})\nReason: ${error.reason}`;
+        } 
+        // fetch 함수 자체가 실패한 경우 (네트워크 단절, CORS 에러 등)
+        else {
+          alertMsg += `(Code: 1)\nReason: CORS/fetch 자체 실패 (origin, credentials 설정 문제 등)`;
         }
 
         alert(alertMsg);
-        
         navigate("/login", { replace: true });
       }
     };
