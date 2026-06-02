@@ -28,26 +28,48 @@ export default function LoginSuccess() {
         // 1. HTTP 상태 코드에 따른 에러 분류
         if (!response.ok) {
           let errorCode = 8; // 기본값: 알 수 없는 HTTP 오류
-          
-          if (response.status === 401) {
-            console.error("[LoginSuccess Error] 401: 브라우저가 쿠키를 유실했거나 만료되었습니다.");
+          let backendErrorMsg = "";
+
+          // 🚨 [추가된 로직] 백엔드에서 보내준 에러 상세 사유(body) 파싱
+          try {
+            const errorData = await response.json();
+            // JSON 형태일 경우 message나 error 필드 추출, 구조를 모를 경우 통째로 문자열화
+            backendErrorMsg = errorData.message || errorData.error || JSON.stringify(errorData);
+          } catch (e) {
+            // JSON이 아니라 순수 텍스트(String)로 내려올 경우를 대비한 폴백
+            try {
+              backendErrorMsg = await response.text();
+            } catch (e2) {
+              backendErrorMsg = "응답 바디를 읽을 수 없음";
+            }
+          }
+
+          if (response.status === 400) {
+            errorCode = 9;
+          } else if (response.status === 401) {
+            // 콘솔에도 백엔드 메시지 출력
+            console.error(`[LoginSuccess Error] 401: ${backendErrorMsg}`);
             errorCode = 2; // 쿠키 유실 의심
           } else if (response.status === 403) {
-            console.error("[LoginSuccess Error] 403: 권한 거부.");
             errorCode = 3;
           } else if (response.status === 404) {
-            console.error("[LoginSuccess Error] 404: 잘못된 API 주소.");
             errorCode = 4;
+          } else if (response.status === 409) {
+            errorCode = 10;
           } else if (response.status >= 500) {
-            console.error("[LoginSuccess Error] 5xx: 백엔드 서버 내부 에러.");
             errorCode = 5;
           }
 
-          // 커스텀 에러 객체를 던져 catch 블록에서 처리하게 함
-          throw { message: `HTTP 상태 코드 에러: ${response.status}`, code: errorCode };
+          // 에러 메시지와 상태 코드, 백엔드 상세 사유를 함께 던짐
+          throw { 
+            message: `HTTP ${response.status}`, 
+            code: errorCode, 
+            status: response.status, 
+            backendMsg: backendErrorMsg 
+          };
         }
 
-        // 2. JSON 파싱 검증
+        // 2. 정상 응답일 경우 JSON 파싱
         let data;
         try {
           data = await response.json();
@@ -76,19 +98,26 @@ export default function LoginSuccess() {
       } catch (error) {
         console.error("[LoginSuccess Exception] 에러 포착:", error);
 
-        // throw로 던진 커스텀 에러 객체(code가 존재함)인지, 
-        // fetch 자체가 실패한 네트워크/CORS 에러(Native Error)인지 판별
         const finalErrorCode = error.code ? error.code : 1; 
+        
+        // 🚨 [추가된 로직] 유저 캡처용 팝업 메시지 조립
+        let alertMsg = `로그인에 실패했습니다. 다시 시도해주세요.\n(Code : ${finalErrorCode})`;
+        
+        // 커스텀 에러로 던져진 백엔드 메시지가 있다면 추가
+        if (error.backendMsg) {
+          alertMsg += `\nStatus: ${error.status}\nReason: ${error.backendMsg}`;
+        } else if (finalErrorCode === 1) {
+          // 에러 코드가 1(Native 에러)인 경우 CORS나 네트워크 단절로 표기
+          alertMsg += `\nReason: CORS 설정 또는 네트워크 에러`;
+        }
 
-        // 유저에게 에러 코드를 포함하여 알림창 노출
-        alert(`로그인에 실패했습니다. 다시 시도해주세요.\n(error code : ${finalErrorCode})`);
+        alert(alertMsg);
         
         navigate("/login", { replace: true });
       }
     };
 
-    // 솔루션 적용: 브라우저가 리다이렉트 직후 쿠키를 디스크/메모리에 
-    // 완전히 기록할 미세한 시간을 벌어주기 위한 Race Condition 방어 로직 (500ms 지연)
+    // Race Condition 방어 로직 (500ms 지연)
     setTimeout(() => {
       fetchToken();
     }, 500);
