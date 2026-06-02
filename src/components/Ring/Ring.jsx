@@ -1,10 +1,3 @@
-const CATEGORY_COLORS = {
-  study: "#F4ECC8",
-  exercise: "#D4E4F1",
-  meeting: "#CFD6C6",
-  work: "#EEDBDF",
-};
-
 const getArcPoint = (radius, angle) => ({
   x: radius * Math.cos(angle),
   y: radius * Math.sin(angle),
@@ -28,31 +21,21 @@ const getArcPath = (radius, startAngle, endAngle) => {
 
 export default function Ring({ schedules, className }) {
   if (!schedules || schedules.length === 0) return null;
-  
-  const counts = {};
-
-  schedules.forEach((schedule) => {
-    counts[schedule.category] = (counts[schedule.category] || 0) + 1;
-  });
 
   const total = schedules.length;
-
   const strokeWidth = 24;
   const radius = 106;
   const gapLength = 36;
-  const entries = Object.entries(counts);
-  const firstPercent = entries.length > 0 ? entries[0][1] / total : 0;
-  const firstAngle = firstPercent * 2 * Math.PI;
   const gapAngle = gapLength / radius;
+  const anglePerBlock = (2 * Math.PI) / total;
+
   const sectorExtraAngle = 0.12;
-  const sectorStartAngle = -firstAngle / 2 + gapAngle / 2 - sectorExtraAngle;
-  const sectorEndAngle = firstAngle / 2 - gapAngle / 2 + sectorExtraAngle;
+  const sectorStartAngle = -anglePerBlock / 2 + gapAngle / 2 - sectorExtraAngle;
+  const sectorEndAngle = anglePerBlock / 2 - gapAngle / 2 + sectorExtraAngle;
   const sectorPath =
     sectorEndAngle > sectorStartAngle
       ? getSectorPath(radius, sectorStartAngle, sectorEndAngle)
       : "";
-
-  let offset = -firstAngle / 2;
 
   return (
     <svg className={className} width="280" height="280">
@@ -60,39 +43,34 @@ export default function Ring({ schedules, className }) {
         {sectorPath && (
           <path
             d={sectorPath}
-            fill={CATEGORY_COLORS[entries[0][0]]}
+            fill={schedules[0].categoryColor}
             opacity="0.35"
           />
         )}
-        {entries.map(([category, count]) => {
-          const percent = count / total;
-          const angle = percent * 2 * Math.PI;
-          const startAngle = offset + gapAngle / 2;
-          const endAngle = offset + angle - gapAngle / 2;
+        {schedules.map((block, index) => {
+          // 1번: 12시 중심으로 펼침 (-anglePerBlock/2 ~ +anglePerBlock/2)
+          // 2번부터: 반시계 방향으로 이어짐
+          const blockStart =
+            -anglePerBlock / 2 - (index > 0 ? index * anglePerBlock : 0);
+          const startAngle = blockStart + gapAngle / 2;
+          const endAngle = blockStart + anglePerBlock - gapAngle / 2;
           const arcPath =
             endAngle > startAngle
               ? getArcPath(radius, startAngle, endAngle)
               : "";
 
-          if (!arcPath) {
-            offset += angle;
-            return null;
-          }
+          if (!arcPath) return null;
 
-          const arc = (
+          return (
             <path
-              key={category}
+              key={block.todayScheduleId}
               d={arcPath}
               fill="none"
-              stroke={CATEGORY_COLORS[category]}
+              stroke={block.categoryColor}
               strokeWidth={strokeWidth}
               strokeLinecap="round"
             />
           );
-
-          offset += angle;
-
-          return arc;
         })}
       </g>
     </svg>

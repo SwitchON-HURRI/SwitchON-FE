@@ -135,7 +135,7 @@ export default function AddEditScheduleModal({
       };
     }
 
-    console.log("payload:", payload);
+    console.log(payload);
 
     if (onSubmit) {
       onSubmit({ ...formData, payload });
