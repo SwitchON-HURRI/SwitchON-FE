@@ -23,17 +23,21 @@ export default function TodayAddableListModal({
     });
   };
 
-  // 한번에 추가 (순차 처리 방식으로 변경)
+  // 한번에 추가
   const handleConfirm = async () => {
     if (selectedIds.size === 0) {
       alert("담을 일정을 1개 이상 선택해주세요.");
       return;
     }
+
     setLoading(true);
+
+    // 실패한 ID들과 성공한 ID들 추적
+    const failedIds = [];
+    const successIds = [];
 
     try {
       const accessToken = localStorage.getItem("accessToken");
-      let hasFailed = false;
 
       for (const id of selectedIds) {
         try {
@@ -43,25 +47,33 @@ export default function TodayAddableListModal({
             credentials: "include",
           });
 
-          if (!response.ok) {
+          if (response.ok) {
+            successIds.push(id); // 성공 트래킹
+          } else {
             console.error(`Failed to add schedule ${id}: ${response.status}`);
-            hasFailed = true;
+            failedIds.push(id); // 서버 거부 실패 트래킹
           }
         } catch (singleErr) {
           console.error(`Network error for schedule ${id}:`, singleErr);
-          hasFailed = true;
+          failedIds.push(id); // 네트워크 에러 실패 트래킹
         }
       }
 
-      if (hasFailed) {
-        alert("일부 일정 추가에 실패했습니다. (서버 혹은 네트워크 오류)");
+      // 하나라도 성공한 게 있다면 화면 갱신
+      if (successIds.length > 0) {
+        setSelectedIds(new Set());
+        onAdded?.();
       }
 
-      setSelectedIds(new Set());
-      onAdded?.();
+      // 일부 실패가 있었을 경우에만 알림을 띄우되, 성공한 개수도 같이 알려주기
+      if (failedIds.length > 0) {
+        alert(
+          `선택한 일정 중 ${successIds.length}개는 추가되었지만, ${failedIds.length}개는 실패했습니다.`,
+        );
+      }
     } catch (err) {
       console.error(err);
-      alert("일정 추가 중 오류가 발생했습니다.");
+      alert("일정 추가 중 예기치 못한 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
