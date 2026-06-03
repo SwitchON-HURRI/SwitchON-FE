@@ -7,7 +7,7 @@ import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
 const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
 
-export default function ScheduleListModal({ date, onClose }) {
+export default function ScheduleListModal({ date, onClose, onChanged }) {
   const selectedDate = date ? new Date(date) : new Date();
   const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
   const yyyy = selectedDate.getFullYear();
@@ -66,9 +66,11 @@ export default function ScheduleListModal({ date, onClose }) {
         <div className={styles.topContainer}>
           <span className={styles.date}>{formattedDate}</span>
           <div className={styles.iconContainer}>
-            <div className={styles.icon}>
-              <img src={filter} alt="filter" />
-            </div>
+            {scheduleList.length > 0 && (
+              <div className={styles.icon}>
+                <img src={filter} alt="filter" />
+              </div>
+            )}
             <div
               className={styles.icon}
               onClick={() => setIsAddModalOpen(true)}
@@ -78,21 +80,28 @@ export default function ScheduleListModal({ date, onClose }) {
           </div>
         </div>
         <div className={styles.scheduleList}>
-          {scheduleList.map((schedule) => (
-            <div
-              key={schedule.scheduleId}
-              className={styles.scheduleItem}
-              onClick={() => setSelectedSchedule(schedule)}
-            >
-              <span className={styles.scheduleText}>{schedule.title}</span>
-              <div
-                className={styles.categoryDot}
-                style={{
-                  backgroundColor: categoryMap[schedule.categoryId]?.color,
-                }}
-              />
+          {scheduleList.length === 0 ? (
+            <div className={styles.empty}>
+              등록된 일정이 없습니다.
+              <br />새 일정을 추가해보세요.
             </div>
-          ))}
+          ) : (
+            scheduleList.map((schedule) => (
+              <div
+                key={schedule.scheduleId}
+                className={styles.scheduleItem}
+                onClick={() => setSelectedSchedule(schedule)}
+              >
+                <span className={styles.scheduleText}>{schedule.title}</span>
+                <div
+                  className={styles.categoryDot}
+                  style={{
+                    backgroundColor: categoryMap[schedule.categoryId]?.color,
+                  }}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -125,9 +134,13 @@ export default function ScheduleListModal({ date, onClose }) {
 
       {isAddModalOpen && (
         <AddEditScheduleModal
+          initialValues={{
+            scheduleDate: dateStr,
+          }}
           onClose={() => {
             setIsAddModalOpen(false);
             fetchSchedules();
+            onChanged?.();
           }}
         />
       )}
