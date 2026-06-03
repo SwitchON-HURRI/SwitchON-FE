@@ -17,7 +17,7 @@ export default function Home() {
   const [isTodayAddableListModalOpen, setIsTodayAddableListModalOpen] =
     useState(false);
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
-  const [todayDateSchedules, setTodayDateSchedules] = useState([]);
+  const [addableSchedules, setAddableSchedules] = useState([]);
   const [categories, setCategories] = useState([]);
 
   const fetchCategories = async () => {
@@ -35,33 +35,59 @@ export default function Home() {
     }
   };
 
-  const fetchTodayDateSchedules = async () => {
+  const fetchAddableSchedules = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
+      const res = await fetch(`${BASE_URL}/schedule/read/today-addable`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: "include",
+      });
 
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-
-      const res = await fetch(
-        `${BASE_URL}/schedule/read/date?date=${yyyy}-${mm}-${dd}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          credentials: "include",
-        },
-      );
+      if (!res.ok) return;
       const data = await res.json();
-      setTodayDateSchedules(data);
+      setAddableSchedules(data);
+      return data;
     } catch (err) {
-      setTodayDateSchedules([]);
+      console.error("일정 불러오기 실패:", err);
     }
   };
 
   useEffect(() => {
-    fetchTodayDateSchedules();
-    fetchCategories();
-  }, []);
+    const checkUserStatusAndFetch = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+
+        // 1. 로그인 여부 체크
+        if (!accessToken) {
+          navigate("/login");
+          return;
+        }
+
+        // 2. 오늘 이미 시작한 유저인지 체크
+        const response = await fetch(`${BASE_URL}/state/read`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        });
+
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (data?.condition) {
+          navigate("/today");
+          return; // 이미 시작했다면 페이지를 이동하므로 여기서 로직을 종료합니다.
+        }
+
+        // 3. 검증을 모두 통과한 안전한 상태일 때만 데이터를 가져옵니다.
+        await fetchAddableSchedules();
+        await fetchCategories();
+      } catch (error) {
+        console.error("사용자 상태 확인 실패:", error);
+      }
+    };
+
+    checkUserStatusAndFetch();
+  }, [navigate, BASE_URL]);
 
   // 스위치 ON 확인
   const handleConfirm = async () => {
@@ -70,7 +96,6 @@ export default function Home() {
       setIsConfirmModalOpen(false);
       return;
     }
-
     setIsConfirmModalOpen(false);
     setIsSleepModalOpen(true);
   };
@@ -106,7 +131,6 @@ export default function Home() {
       if (!planResponse.ok)
         throw new Error(`plan 실패: ${planResponse.status}`);
 
-      // plan 응답 localStorage에 저장
       const planData = await planResponse.json();
       console.log("planData:", planData);
       const today = new Date().toISOString().slice(0, 10);
@@ -120,40 +144,6 @@ export default function Home() {
       alert("오늘 하루 시작에 실패했습니다.");
     }
   };
-
-  // Home 진입 시 이미 시작한 하루면 Today 이동
-  useEffect(() => {
-    const hasTodayState = async () => {
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-
-        if (!accessToken) {
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch(`${BASE_URL}/state/read`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          credentials: "include",
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        if (data?.condition) {
-          navigate("/today");
-        }
-      } catch (error) {
-        console.error("오늘 상태 조회 실패:", error);
-      }
-    };
-
-    hasTodayState();
-  }, []);
 
   return (
     <>
@@ -190,7 +180,7 @@ export default function Home() {
         <div
           className={styles.addScheduleBox}
           onClick={() => {
-            if (todayDateSchedules.length === 0) {
+            if (addableSchedules.length === 0) {
               alert("담을 일정이 없습니다.");
               return;
             }
@@ -220,11 +210,11 @@ export default function Home() {
 
         {isTodayAddableListModalOpen && (
           <TodayAddableListModal
-            schedules={todayDateSchedules}
+            schedules={addableSchedules}
             onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
               setIsTodayAddableListModalOpen(false);
-              fetchTodayDateSchedules();
+              fetchAddableSchedules();
             }}
           />
         )}
