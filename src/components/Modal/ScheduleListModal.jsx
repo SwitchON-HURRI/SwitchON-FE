@@ -55,8 +55,7 @@ export default function ScheduleListModal({ date, onClose }) {
     }
   };
 
-  
-  (() => {
+  useEffect(() => {
     fetchSchedules();
     fetchCategories();
   }, []);

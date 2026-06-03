@@ -13,6 +13,7 @@
   margin: 0 50px;
   width: 100%;
   flex-direction: column;
+  align-items: center;
   gap: 29px;
 
   border-radius: 15px;
@@ -63,10 +64,51 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 230px;
+  overflow-y: auto;
 }
 
 .categoryDot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.btn1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 85px;
+  padding: 10px;
+  border: none;
+  background-color: #4c4c4c;
+  color: #f2f2f2;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 85px;
+  padding: 10px;
+  border: 1px solid #c1c1c1;
+  background-color: #fff;
+  color: #4c4c4c;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.selected {
+  border-color: #989898;
+  background: #f5f5f5;
 }
