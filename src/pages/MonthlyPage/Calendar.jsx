@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
@@ -12,9 +12,9 @@ function formatKey(date) {
   return `${y}-${m}-${d}`;
 }
 
-function EventBars({ date, eventData }) {
+function EventBars({ date, eventMap }) {
   const key = formatKey(date);
-  const dayEvents = eventData.filter((ev) => ev.start <= key && ev.end >= key);
+  const dayEvents = eventMap[key] || [];
 
   return (
     <div className="event-bars">
@@ -40,10 +40,20 @@ function EventBars({ date, eventData }) {
   );
 }
 
-export default function CalendarComponent({ onDateClick }) {
+export default function CalendarComponent({ onDateClick, refreshKey }) {
   const [value, setValue] = useState(new Date());
   const [eventData, setEventData] = useState([]);
   const [categoryMap, setCategoryMap] = useState({});
+  const [activeDate, setActiveDate] = useState(new Date());
+
+  const eventMap = useMemo(() => {
+    const map = {};
+    eventData.forEach((ev) => {
+      if (!map[ev.start]) map[ev.start] = [];
+      map[ev.start].push(ev);
+    });
+    return map;
+  }, [eventData]);
 
   // 카테고리 fetch
   useEffect(() => {
@@ -91,10 +101,8 @@ export default function CalendarComponent({ onDateClick }) {
   };
 
   useEffect(() => {
-    if (Object.keys(categoryMap).length > 0) {
-      fetchMonthSchedules(value);
-    }
-  }, [categoryMap]);
+    fetchMonthSchedules(activeDate);
+  }, [activeDate, refreshKey]);
 
   const handleChange = (date) => {
     setValue(date);
@@ -102,7 +110,7 @@ export default function CalendarComponent({ onDateClick }) {
   };
 
   const handleActiveStartDateChange = ({ activeStartDate }) => {
-    fetchMonthSchedules(activeStartDate);
+    setActiveDate(activeStartDate);
   };
 
   return (
@@ -120,7 +128,7 @@ export default function CalendarComponent({ onDateClick }) {
         }
         tileContent={({ date, view }) =>
           view === "month" ? (
-            <EventBars date={date} eventData={eventData} />
+            <EventBars date={date} eventMap={eventMap} />
           ) : null
         }
         prevLabel={null}
