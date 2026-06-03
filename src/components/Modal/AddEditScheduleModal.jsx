@@ -89,6 +89,20 @@ export default function AddEditScheduleModal({
     let payload;
 
     if (formData.isFixed) {
+      if (!formData.startTime) {
+        alert("시작 시간을 선택해주세요.");
+        return;
+      }
+      if (!formData.endTime) {
+        alert("종료 시간을 선택해주세요.");
+        return;
+      }
+
+      if (formData.startTime >= formData.endTime) {
+        alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+        return;
+      }
+
       payload = {
         categoryId,
         title: formData.title || "제목 없음",
