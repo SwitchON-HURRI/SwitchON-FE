@@ -102,7 +102,7 @@ export default function CalendarComponent({ onDateClick, refreshKey }) {
 
   useEffect(() => {
     fetchMonthSchedules(activeDate);
-  }, [activeDate, refreshKey]);
+  }, [activeDate, refreshKey, categoryMap]);
 
   const handleChange = (date) => {
     setValue(date);

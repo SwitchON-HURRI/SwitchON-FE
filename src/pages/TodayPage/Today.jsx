@@ -31,6 +31,28 @@ export default function Today() {
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [addableSchedules, setAddableSchedules] = useState([]);
 
+  const reloadPlan = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: "include",
+    });
+
+    const planData = await res.json();
+
+    const merged = await mergePlanWithCategories(planData);
+
+    setPlanResult(merged);
+    savePlanResult(merged);
+  };
+
+  useEffect(() => {
+    if (location.state?.refreshPlan) {
+      reloadPlan();
+    }
+  }, [location.state]);
+
   const mergePlanWithCategories = async (planData) => {
     const accessToken = localStorage.getItem("accessToken");
 
@@ -470,6 +492,7 @@ export default function Today() {
             onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
               setIsTodayAddableListModalOpen(false);
+              reloadPlan(); // plan 새로고침
               setIsSleepModalOpen(true); // 담기 완료 → 잘 시간 재입력
             }}
           />
