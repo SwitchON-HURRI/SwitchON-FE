@@ -23,17 +23,20 @@ export default function TodayAddableListModal({
     });
   };
 
-  // 한번에 추가
+  // 한번에 추가 (순차 처리 방식으로 변경)
   const handleConfirm = async () => {
     if (selectedIds.size === 0) {
       alert("담을 일정을 1개 이상 선택해주세요.");
       return;
     }
     setLoading(true);
+
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const results = await Promise.allSettled(
-        [...selectedIds].map(async (id) => {
+      let hasFailed = false;
+
+      for (const id of selectedIds) {
+        try {
           const response = await fetch(`${BASE_URL}/today-schedule/add/${id}`, {
             method: "POST",
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -41,23 +44,24 @@ export default function TodayAddableListModal({
           });
 
           if (!response.ok) {
-            return Promise.reject(new Error(`Failed to add schedule ${id}: ${response.status}`));
+            console.error(`Failed to add schedule ${id}: ${response.status}`);
+            hasFailed = true;
           }
-
-          return id;
-        }),
-      );
-
-      const failed = results.filter((r) => r.status === "rejected");
-
-      if (failed.length > 0) {
-        alert("일부 일정 추가 실패");
+        } catch (singleErr) {
+          console.error(`Network error for schedule ${id}:`, singleErr);
+          hasFailed = true;
+        }
       }
+
+      if (hasFailed) {
+        alert("일부 일정 추가에 실패했습니다. (서버 혹은 네트워크 오류)");
+      }
+
       setSelectedIds(new Set());
       onAdded?.();
     } catch (err) {
       console.error(err);
-      alert("네트워크 오류로 일정 추가 실패");
+      alert("일정 추가 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
