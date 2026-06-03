@@ -31,25 +31,37 @@ export default function Today() {
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [addableSchedules, setAddableSchedules] = useState([]);
 
-  const reloadPlan = async () => {
-    const accessToken = localStorage.getItem("accessToken");
+  const reloadPlan = async (sleepTime) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
 
-    const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      credentials: "include",
-    });
+      const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Content-Type 헤더 누락 방지
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ sleepTime }),
+        credentials: "include",
+      });
 
-    const planData = await res.json();
+      if (!res.ok) throw new Error("plan 생성/재생성 실패");
 
-    const merged = await mergePlanWithCategories(planData);
+      const planData = await res.json();
+      const merged = await mergePlanWithCategories(planData);
 
-    setPlanResult(merged);
-    savePlanResult(merged);
+      setPlanResult(merged);
+      savePlanResult(merged);
+      setIsSleepModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert("일정 배치에 실패했습니다.");
+    }
   };
 
   useEffect(() => {
     if (location.state?.refreshPlan) {
-      reloadPlan();
+      setIsSleepModalOpen(true);
     }
   }, [location.state]);
 
@@ -120,35 +132,6 @@ export default function Today() {
 
     loadPlan();
   }, []);
-
-  const handlePlanResubmit = async (sleepTime) => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ sleepTime }),
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("plan 재생성 실패");
-
-      const planData = await res.json();
-
-      const merged = await mergePlanWithCategories(planData);
-
-      setPlanResult(merged);
-      savePlanResult(merged);
-      setIsSleepModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      alert("일정 재배치에 실패했습니다.");
-    }
-  };
 
   const getPlanResult = () => {
     const saved = localStorage.getItem("planResult");
@@ -482,7 +465,7 @@ export default function Today() {
         {isSleepModalOpen && (
           <SleepTimeModal
             onClose={() => setIsSleepModalOpen(false)}
-            onConfirm={handlePlanResubmit}
+            onConfirm={reloadPlan}
           />
         )}
         {isTodayAddableListModalOpen && (
@@ -492,8 +475,7 @@ export default function Today() {
             onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
               setIsTodayAddableListModalOpen(false);
-              reloadPlan(); // plan 새로고침
-              setIsSleepModalOpen(true); // 담기 완료 → 잘 시간 재입력
+              setIsSleepModalOpen(true);
             }}
           />
         )}
