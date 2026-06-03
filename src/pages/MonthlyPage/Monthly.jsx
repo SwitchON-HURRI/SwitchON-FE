@@ -15,6 +15,11 @@ export default function Monthly() {
     setSelectedDate(date);
     setIsModalOpen(true);
   };
+
+  const triggerRefresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
   // 상세창에서 "오늘 일정에 담기"를 눌렀을 때 실행될 핸들러
   const handleScheduleChanged = () => {
     setRefreshKey((prev) => prev + 1);
@@ -32,6 +37,7 @@ export default function Monthly() {
             date={selectedDate}
             onClose={() => setIsModalOpen(false)}
             onChanged={handleScheduleChanged}
+            onScheduleAdded={triggerRefresh}
           />
         )}
       </div>
