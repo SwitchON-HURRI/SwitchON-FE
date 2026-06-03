@@ -67,38 +67,17 @@ export default function Today() {
   };
 
   const fetchAddableSchedules = async () => {
-    const dummyData = [
-      {
-        scheduleId: 1,
-        title: "오픽 공부하기",
-        categoryId: 1,
-      },
-      {
-        scheduleId: 2,
-        title: "유튜브 편집하기",
-        categoryId: 2,
-      },
-      {
-        scheduleId: 3,
-        title: "알바",
-        categoryId: 3,
-      },
-    ];
+    const accessToken = localStorage.getItem("accessToken");
 
-    setAddableSchedules(dummyData);
-    return dummyData;
+    const res = await fetch(`${BASE_URL}/schedule/read/today-addable`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: "include",
+    });
 
-    // const accessToken = localStorage.getItem("accessToken");
+    const data = await res.json();
 
-    // const res = await fetch(`${BASE_URL}/schedule/read/today-addable`, {
-    //   headers: { Authorization: `Bearer ${accessToken}` },
-    //   credentials: "include",
-    // });
-
-    // const data = await res.json();
-
-    // setAddableSchedules(data);
-    // return data;
+    setAddableSchedules(data);
+    return data;
   };
 
   useEffect(() => {
@@ -198,40 +177,20 @@ export default function Today() {
   };
 
   const fetchCategories = async () => {
-    const dummyCategories = [
-      {
-        categoryId: 1,
-        categoryName: "공부",
-        categoryColor: "#F4ECC8",
+    const accessToken = localStorage.getItem("accessToken");
+
+    const response = await fetch(`${BASE_URL}/category/read`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-      {
-        categoryId: 2,
-        categoryName: "취미",
-        categoryColor: "#CFD6C6",
-      },
-      {
-        categoryId: 3,
-        categoryName: "알바",
-        categoryColor: "#EEDBDF",
-      },
-    ];
+      credentials: "include",
+    });
 
-    setCategories(dummyCategories);
+    if (!response.ok) return;
 
-    // const accessToken = localStorage.getItem("accessToken");
+    const data = await response.json();
 
-    // const response = await fetch(`${BASE_URL}/category/read`, {
-    //   headers: {
-    //     Authorization: `Bearer ${accessToken}`,
-    //   },
-    //   credentials: "include",
-    // });
-
-    // if (!response.ok) return;
-
-    // const data = await response.json();
-
-    // setCategories(data);
+    setCategories(data);
   };
 
   useEffect(() => {
