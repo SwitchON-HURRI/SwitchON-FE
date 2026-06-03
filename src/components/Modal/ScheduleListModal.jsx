@@ -129,6 +129,10 @@ export default function ScheduleListModal({ date, onClose, onChanged }) {
             fetchSchedules();
             setSelectedSchedule(null);
           }}
+          onAdded={() => {
+            fetchSchedules(); // 현재 날짜 일정 리스트도 최신화하고
+            onChanged?.(); // 캘린더/플랜 새로고침을 위한 콜백 실행
+          }}
         />
       )}
 
