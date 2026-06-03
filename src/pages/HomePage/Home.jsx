@@ -6,7 +6,7 @@ import switchBtn from "../../assets/switch.svg";
 import SelectedState from "../../components/SelectedState/SelectedState.jsx";
 import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
 import SleepTimeModal from "../../components/Modal/SleepTimeModal.jsx";
-import TodayDateListModal from "../../components/Modal/TodayDateListModal.jsx";
+import TodayAddableListModal from "../../components/Modal/TodayAddableListModal.jsx";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -14,7 +14,8 @@ export default function Home() {
 
   const [selectedState, setSelectedState] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isTodayDateListModalOpen, setIsTodayDateListModalOpen] = useState(false);
+  const [isTodayAddableListModalOpen, setIsTodayAddableListModalOpen] =
+    useState(false);
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [todayDateSchedules, setTodayDateSchedules] = useState([]);
 
@@ -176,7 +177,7 @@ export default function Home() {
               alert("담을 일정이 없습니다.");
               return;
             }
-            setIsTodayDateListModalOpen(true);
+            setIsTodayAddableListModalOpen(true);
           }}
         >
           <span>
@@ -200,9 +201,9 @@ export default function Home() {
           />
         )}
 
-        {isTodayDateListModalOpen && (
-          <TodayDateListModal
-            onClose={() => setIsTodayDateListModalOpen(false)}
+        {isTodayAddableListModalOpen && (
+          <TodayAddableListModal
+            onClose={() => setIsTodayAddableListModalOpen(false)}
           />
         )}
       </div>

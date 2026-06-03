@@ -11,13 +11,13 @@ import ScheduleCard from "../../components/ScheduleCard/ScheduleCard.jsx";
 import AddEditScheduleModal from "../../components/Modal/AddEditScheduleModal.jsx";
 import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
 import Ring from "../../components/Ring/Ring.jsx";
-import TodayDateListModal from "../../components/Modal/TodayDateListModal.jsx";
+import TodayAddableListModal from "../../components/Modal/TodayAddableListModal.jsx";
 import SleepTimeModal from "../../components/Modal/SleepTimeModal.jsx";
 
 export default function Today() {
+  const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
   const navigate = useNavigate();
   const location = useLocation();
-  const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
   const [selectedState, setSelectedState] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function Today() {
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [isTodayDateListModalOpen, setIsTodayDateListModalOpen] =
+  const [isTodayAddableListModalOpen, setIsTodayAddableListModalOpen] =
     useState(false);
   const [todayDateSchedules, setTodayDateSchedules] = useState([]);
   const [isReselectMode, setIsReselectMode] = useState(false);
@@ -528,7 +528,7 @@ export default function Today() {
                 alert("담을 일정이 없습니다.");
                 return;
               }
-              setIsTodayDateListModalOpen(true);
+              setIsTodayAddableListModalOpen(true);
             }}
           >
             <span>
@@ -587,11 +587,11 @@ export default function Today() {
             onConfirm={handlePlanResubmit}
           />
         )}
-        {isTodayDateListModalOpen && (
-          <TodayDateListModal
-            onClose={() => setIsTodayDateListModalOpen(false)}
+        {isTodayAddableListModalOpen && (
+          <TodayAddableListModal
+            onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
-              setIsTodayDateListModalOpen(false);
+              setIsTodayAddableListModalOpen(false);
               setIsSleepModalOpen(true); // 담기 완료 → 잘 시간 재입력
             }}
           />
