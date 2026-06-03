@@ -51,24 +51,7 @@ export default function ScheduleDetailModal({
     }
   };
 
-  const getToday = () => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-  const isToday = (date) => {
-    return date?.slice(0, 10) === getToday();
-  };
-
   const handleAddTodaySchedule = async () => {
-    if (todayScheduleIds.includes(scheduleId)) {
-      alert("이미 오늘 일정에 담겼거나 완료된 일정입니다.");
-      setIsConfirmOpen(false);
-      return;
-    }
     try {
       const accessToken = localStorage.getItem("accessToken");
 
@@ -173,7 +156,7 @@ export default function ScheduleDetailModal({
               </span>
             </div>
 
-            {isToday(date) && (
+            {!todayScheduleIds.includes(scheduleId) && (
               <div
                 className={styles.addBtn}
                 onClick={() => setIsConfirmOpen(true)}

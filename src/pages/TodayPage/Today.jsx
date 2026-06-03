@@ -20,19 +20,86 @@ export default function Today() {
   const location = useLocation();
   const [selectedState, setSelectedState] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmModalText, setConfirmModalText] = useState("");
   const [confirmModalType, setConfirmModalType] = useState("");
-  const [todaySchedules, setTodaySchedules] = useState([]);
-  const [editingSchedule, setEditingSchedule] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isTodayAddableListModalOpen, setIsTodayAddableListModalOpen] =
     useState(false);
-  const [todayDateSchedules, setTodayDateSchedules] = useState([]);
   const [isReselectMode, setIsReselectMode] = useState(false);
   const [planResult, setPlanResult] = useState(null);
+  const enrichedBlocks = planResult?.blocks ?? [];
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
-  const [enrichedBlocks, setEnrichedBlocks] = useState([]);
+  const [addableSchedules, setAddableSchedules] = useState([]);
+
+  const mergePlanWithCategories = async (planData) => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    const res = await fetch(`${BASE_URL}/today-schedule/today`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: "include",
+    });
+
+    const todayList = await res.json();
+
+    const map = {};
+    todayList.forEach((s) => {
+      map[s.todayScheduleId] = {
+        categoryName: s.categoryName,
+        categoryColor: s.categoryColor,
+        scheduleDate: s.scheduleDate,
+      };
+    });
+
+    const merged = planData.blocks.map((block) => ({
+      ...block,
+      categoryName:
+        map[block.todayScheduleId]?.categoryName ?? block.categoryName,
+      categoryColor:
+        map[block.todayScheduleId]?.categoryColor ?? block.categoryColor,
+      scheduleDate:
+        map[block.todayScheduleId]?.scheduleDate ?? block.scheduleDate,
+    }));
+
+    return {
+      ...planData,
+      blocks: merged,
+    };
+  };
+
+  const fetchAddableSchedules = async () => {
+    const dummyData = [
+      {
+        scheduleId: 1,
+        title: "오픽 공부하기",
+        categoryId: 1,
+      },
+      {
+        scheduleId: 2,
+        title: "유튜브 편집하기",
+        categoryId: 2,
+      },
+      {
+        scheduleId: 3,
+        title: "알바",
+        categoryId: 3,
+      },
+    ];
+
+    setAddableSchedules(dummyData);
+    return dummyData;
+
+    // const accessToken = localStorage.getItem("accessToken");
+
+    // const res = await fetch(`${BASE_URL}/schedule/read/today-addable`, {
+    //   headers: { Authorization: `Bearer ${accessToken}` },
+    //   credentials: "include",
+    // });
+
+    // const data = await res.json();
+
+    // setAddableSchedules(data);
+    // return data;
+  };
 
   useEffect(() => {
     if (location.state?.openSleepModal) {
@@ -40,72 +107,24 @@ export default function Today() {
     }
   }, []);
 
-  // planResult가 세팅되면 todaySchedules랑 합치기
   useEffect(() => {
-    if (!planResult) return;
+    const loadPlan = async () => {
+      const saved = getPlanResult();
+      if (!saved) return;
 
-    const merge = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      const res = await fetch(`${BASE_URL}/today-schedule/today`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-      });
-      const todayList = await res.json();
-      console.log("todayList:", todayList); // categoryColor 있는지 확인
-      console.log("planResult.blocks:", planResult.blocks); // categoryColor 있는지 확인
+      const merged = await mergePlanWithCategories(saved);
 
-      // todayScheduleId 기준으로 category 정보 매핑
-      const map = {};
-      todayList.forEach((s) => {
-        map[String(s.todayScheduleId)] = {
-          categoryName: s.categoryName,
-          categoryColor: s.categoryColor,
-          scheduleDate: s.scheduleDate,
-        };
-      });
-
-      const merged = planResult.blocks.map((block) => ({
-        ...block,
-        categoryName:
-          map[String(block.todayScheduleId)]?.categoryName ??
-          block.categoryName,
-        categoryColor:
-          map[String(block.todayScheduleId)]?.categoryColor ??
-          block.categoryColor,
-        scheduleDate:
-          map[String(block.todayScheduleId)]?.scheduleDate ??
-          block.scheduleDate,
-      }));
-      console.log("merged:", merged); // categoryColor 있는지 확인
-      console.log("map keys:", Object.keys(map));
-      console.log(
-        "block todayScheduleIds:",
-        planResult.blocks.map((b) => b.todayScheduleId),
-      );
-      console.log(
-        "merged categoryColors:",
-        merged.map((b) => ({ id: b.todayScheduleId, color: b.categoryColor })),
-      );
-
-      setEnrichedBlocks(merged);
-      savePlanResultWithCategories(planResult, merged);
+      setPlanResult(merged);
     };
 
-    merge();
-  }, [planResult]);
-
-  // 진입 시 localStorage에서 plan 로드
-  useEffect(() => {
-    const saved = getPlanResult();
-    if (saved) setPlanResult(saved);
+    loadPlan();
   }, []);
 
-  // TodayScheduleListModal의 onAdded → SleepTimeModal 띄우기로 변경
   const handlePlanResubmit = async (sleepTime) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      const planResponse = await fetch(`${BASE_URL}/today-schedule/plan`, {
+      const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,14 +134,17 @@ export default function Today() {
         credentials: "include",
       });
 
-      if (!planResponse.ok) throw new Error("plan 재생성 실패");
+      if (!res.ok) throw new Error("plan 재생성 실패");
 
-      const planData = await planResponse.json();
-      savePlanResultWithCategories(planData, enrichedBlocks); // localStorage 갱신
-      setPlanResult(planData); // 화면 즉시 반영
+      const planData = await res.json();
+
+      const merged = await mergePlanWithCategories(planData);
+
+      setPlanResult(merged);
+      savePlanResult(merged);
       setIsSleepModalOpen(false);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       alert("일정 재배치에 실패했습니다.");
     }
   };
@@ -137,51 +159,14 @@ export default function Today() {
 
   const savePlanResult = (planData) => {
     const today = new Date().toISOString().slice(0, 10);
+
     localStorage.setItem("planResult", JSON.stringify(planData));
     localStorage.setItem("planDate", today);
   };
 
-  const savePlanResultWithCategories = (planData, enriched) => {
-    const today = new Date().toISOString().slice(0, 10);
-
-    const enrichedPlanData = {
-      ...planData,
-      blocks: enriched,
-    };
-
-    localStorage.setItem("planResult", JSON.stringify(enrichedPlanData));
-    localStorage.setItem("planDate", today);
-  };
   const handleStateReselect = () => {
     setIsReselectMode(true);
   };
-
-  const fetchTodayDateSchedules = async () => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-
-      const res = await fetch(
-        `${BASE_URL}/schedule/read/date?date=${yyyy}-${mm}-${dd}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          credentials: "include",
-        },
-      );
-      const data = await res.json();
-      setTodayDateSchedules(data);
-    } catch (err) {
-      setTodayDateSchedules([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchTodayDateSchedules();
-  }, []);
 
   // 상태값 수정
   const handleStateSelect = async (condition) => {
@@ -213,74 +198,45 @@ export default function Today() {
   };
 
   const fetchCategories = async () => {
-    const accessToken = localStorage.getItem("accessToken");
-
-    const response = await fetch(`${BASE_URL}/category/read`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    const dummyCategories = [
+      {
+        categoryId: 1,
+        categoryName: "공부",
+        categoryColor: "#F4ECC8",
       },
-      credentials: "include",
-    });
+      {
+        categoryId: 2,
+        categoryName: "취미",
+        categoryColor: "#CFD6C6",
+      },
+      {
+        categoryId: 3,
+        categoryName: "알바",
+        categoryColor: "#EEDBDF",
+      },
+    ];
 
-    if (!response.ok) return;
+    setCategories(dummyCategories);
 
-    const data = await response.json();
+    // const accessToken = localStorage.getItem("accessToken");
 
-    setCategories(data);
+    // const response = await fetch(`${BASE_URL}/category/read`, {
+    //   headers: {
+    //     Authorization: `Bearer ${accessToken}`,
+    //   },
+    //   credentials: "include",
+    // });
+
+    // if (!response.ok) return;
+
+    // const data = await response.json();
+
+    // setCategories(data);
   };
 
   useEffect(() => {
     fetchCategories();
   }, []);
-
-  const handleEdit = async (scheduleId) => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const response = await fetch(`${BASE_URL}/schedule/read/${scheduleId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-
-      const data = await response.json();
-
-      setEditingSchedule(data);
-    } catch (error) {
-      console.error("일정 단건 조회 실패:", error);
-    }
-  };
-
-  // 오늘 일정 목록 불러오기
-  const fetchTodaySchedules = async () => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const response = await fetch(`${BASE_URL}/today-schedule/today`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-
-      const data = await response.json();
-      setTodaySchedules(data.filter((s) => !s.isCompleted)); // 완료된 일정 안 보이게 필터링
-    } catch (error) {
-      console.error("오늘 일정 조회 실패:", error);
-      setTodaySchedules([]);
-    }
-  };
 
   const handleRingWrapperClick = (event) => {
     if (event.target.className === styles.switchBtn) {
@@ -369,10 +325,6 @@ export default function Today() {
     };
 
     fetchTodayState();
-  }, []);
-
-  useEffect(() => {
-    fetchTodaySchedules();
   }, []);
 
   return (
@@ -468,7 +420,6 @@ export default function Today() {
                     ? `${block.plannedStartTime.slice(11, 16)}-${block.plannedEndTime.slice(11, 16)}`
                     : null
                 }
-                onEdit={() => handleEdit(block.scheduleId)}
                 onRemove={async () => {
                   const accessToken = localStorage.getItem("accessToken");
                   const res = await fetch(
@@ -486,6 +437,7 @@ export default function Today() {
                 }}
                 onComplete={async () => {
                   const accessToken = localStorage.getItem("accessToken");
+
                   const res = await fetch(
                     `${BASE_URL}/today-schedule/complete/${block.todayScheduleId}`,
                     {
@@ -494,39 +446,35 @@ export default function Today() {
                       credentials: "include",
                     },
                   );
-                  if (res.ok) {
-                    // enrichedBlocks 업데이트
-                    setEnrichedBlocks((prev) =>
-                      prev.map((b) =>
+
+                  if (!res.ok) return;
+
+                  setPlanResult((prev) => {
+                    const updated = {
+                      ...prev,
+                      blocks: prev.blocks.map((b) =>
                         b.todayScheduleId === block.todayScheduleId
                           ? { ...b, isCompleted: true }
                           : b,
                       ),
-                    );
-                    // planResult도 업데이트 후 localStorage 저장
-                    setPlanResult((prev) => {
-                      const updated = {
-                        ...prev,
-                        blocks: prev.blocks.map((b) =>
-                          b.todayScheduleId === block.todayScheduleId
-                            ? { ...b, isCompleted: true }
-                            : b,
-                        ),
-                      };
-                      savePlanResultWithCategories(updated, enrichedBlocks); // localStorage 갱신
-                      return updated;
-                    });
-                  }
+                    };
+
+                    savePlanResult(updated);
+                    return updated;
+                  });
                 }}
               />
             ))}
           <div
             className={styles.addScheduleBox}
-            onClick={() => {
-              if (todayDateSchedules.length === 0) {
+            onClick={async () => {
+              const data = await fetchAddableSchedules();
+
+              if (data.length === 0) {
                 alert("담을 일정이 없습니다.");
                 return;
               }
+
               setIsTodayAddableListModalOpen(true);
             }}
           >
@@ -540,37 +488,7 @@ export default function Today() {
           <AddEditScheduleModal
             onClose={() => {
               setIsAddModalOpen(false);
-              fetchTodaySchedules();
             }}
-          />
-        )}
-        {editingSchedule && (
-          <AddEditScheduleModal
-            mode="edit"
-            initialValues={{
-              ...editingSchedule,
-
-              category: {
-                categoryId: editingSchedule.categoryId,
-
-                categoryName: categories.find(
-                  (c) => c.categoryId === editingSchedule.categoryId,
-                )?.categoryName,
-
-                categoryColor: categories.find(
-                  (c) => c.categoryId === editingSchedule.categoryId,
-                )?.categoryColor,
-              },
-
-              startTime: editingSchedule.startTime?.slice(0, 5) || "",
-
-              endTime: editingSchedule.endTime?.slice(0, 5) || "",
-            }}
-            onEditSuccess={() => {
-              fetchTodaySchedules();
-              setEditingSchedule(null);
-            }}
-            onClose={() => setEditingSchedule(null)}
           />
         )}
         {confirmModalText && (
@@ -588,6 +506,8 @@ export default function Today() {
         )}
         {isTodayAddableListModalOpen && (
           <TodayAddableListModal
+            schedules={addableSchedules}
+            categories={categories}
             onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
               setIsTodayAddableListModalOpen(false);
