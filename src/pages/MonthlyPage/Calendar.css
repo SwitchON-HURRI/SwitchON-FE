@@ -116,6 +116,7 @@
 
 .react-calendar__tile:hover abbr {
   background: #6a6a6a;
+  color: #ffffff;
 }
 
 /* 이벤트 바 */

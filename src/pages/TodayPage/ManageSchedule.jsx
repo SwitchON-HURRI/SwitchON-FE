@@ -263,7 +263,9 @@ export default function ManageSchedule() {
                 }}
                 onAdded={() => {
                   setIsDetailModalOpen(false);
-                  navigate("/today", { state: { openSleepModal: true } });
+                  navigate("/today", {
+                    state: { openSleepModal: true, refreshPlan: true },
+                  });
                 }}
                 onDelete={() => {
                   fetchCategoriesWithSchedules();
