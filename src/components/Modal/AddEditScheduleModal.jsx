@@ -89,11 +89,6 @@ export default function AddEditScheduleModal({
     let payload;
 
     if (formData.isFixed) {
-      if (!formData.startTime || !formData.endTime) {
-        alert("시작/종료 시간을 입력해주세요.");
-        return;
-      }
-
       payload = {
         categoryId,
         title: formData.title || "제목 없음",
@@ -127,11 +122,8 @@ export default function AddEditScheduleModal({
         memo: formData.memo || "",
         location: formData.location || "",
 
-        ...(formData.startTime &&
-          formData.endTime && {
-            startTime: formatTime(formData.startTime),
-            endTime: formatTime(formData.endTime),
-          }),
+        startTime: null,
+        endTime: null,
       };
     }
 
