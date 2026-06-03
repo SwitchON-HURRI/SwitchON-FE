@@ -58,7 +58,6 @@ export default function Today() {
       const map = {};
       todayList.forEach((s) => {
         map[String(s.todayScheduleId)] = {
-          // ✅ 문자열로 통일
           categoryName: s.categoryName,
           categoryColor: s.categoryColor,
           scheduleDate: s.scheduleDate,

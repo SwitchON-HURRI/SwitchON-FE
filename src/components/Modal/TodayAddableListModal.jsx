@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 import styles from "./TodayAddableListModal.module.css";
 
-export default function TodayAddableListModal({ date, onClose, onAdded }) {
+export default function TodayAddableListModal({ onClose, onAdded }) {
   const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
   const [scheduleList, setScheduleList] = useState([]);
-  const selectedDate = date ? new Date(date) : new Date();
-  const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
   const [categoryMap, setCategoryMap] = useState({});
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  // 체크박스 토글
+  const handleToggle = (scheduleId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(scheduleId) ? next.delete(scheduleId) : next.add(scheduleId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchAddableSchedules();
@@ -46,18 +54,24 @@ export default function TodayAddableListModal({ date, onClose, onAdded }) {
     }
   };
 
-  const handleScheduleClick = async (schedule) => {
+  // 한번에 추가
+  const handleConfirm = async () => {
+    if (selectedIds.size === 0) {
+      alert("담을 일정을 1개 이상 선택해주세요.");
+      return;
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const res = await fetch(
-        `${BASE_URL}/today-schedule/add/${schedule.scheduleId}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${accessToken}` },
-          credentials: "include",
-        },
+      await Promise.all(
+        [...selectedIds].map((id) =>
+          fetch(`${BASE_URL}/today-schedule/add/${id}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: "include",
+          }),
+        ),
       );
-      if (!res.ok) throw new Error("오늘 일정 추가 실패");
       onAdded?.();
       onClose();
     } catch (err) {
@@ -68,15 +82,12 @@ export default function TodayAddableListModal({ date, onClose, onAdded }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.container} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.topContainer}>
-          <span className={styles.date}>{formattedDate}</span>
-        </div>
         <div className={styles.scheduleList}>
           {scheduleList.map((schedule) => (
             <div
               key={schedule.scheduleId}
-              className={styles.scheduleItem}
-              onClick={() => handleScheduleClick(schedule)}
+              className={`${styles.scheduleItem} ${selectedIds.has(schedule.scheduleId) ? styles.selected : ""}`}
+              onClick={() => handleToggle(schedule.scheduleId)}
             >
               <span className={styles.scheduleText}>{schedule.title}</span>
               <div
@@ -87,6 +98,14 @@ export default function TodayAddableListModal({ date, onClose, onAdded }) {
               />
             </div>
           ))}
+        </div>
+        <div className={styles.buttonContainer}>
+          <button className={styles.btn1} onClick={onClose}>
+            취소
+          </button>
+          <button className={styles.btn2} onClick={handleConfirm}>
+            {selectedIds.size > 0 ? `${selectedIds.size}개 담기` : "담기"}
+          </button>
         </div>
       </div>
     </div>

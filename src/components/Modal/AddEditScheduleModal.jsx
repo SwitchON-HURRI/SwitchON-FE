@@ -327,27 +327,26 @@ export default function AddEditScheduleModal({
               </>
             )}
 
-            <div className={styles.rowWrapper}>
-              {/* <div className={styles.wrapper}>
-                <span className={styles.label}>시작 시간</span>
-
-                <input
-                  type="time"
-                  value={formData.startTime}
-                  onChange={handleChange("startTime")}
-                />
-              </div> */}
-
-              {/* <div className={styles.wrapper}>
-                <span className={styles.label}>종료 시간</span>
-
-                <input
-                  type="time"
-                  value={formData.endTime}
-                  onChange={handleChange("endTime")}
-                />
-              </div> */}
-            </div>
+            {formData.isFixed && (
+              <div className={styles.rowWrapper}>
+                <div className={styles.wrapper}>
+                  <span className={styles.label}>시작 시간</span>
+                  <input
+                    type="time"
+                    value={formData.startTime}
+                    onChange={handleChange("startTime")}
+                  />
+                </div>
+                <div className={styles.wrapper}>
+                  <span className={styles.label}>종료 시간</span>
+                  <input
+                    type="time"
+                    value={formData.endTime}
+                    onChange={handleChange("endTime")}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className={styles.wrapper}>
               <span className={styles.label}>메모</span>
