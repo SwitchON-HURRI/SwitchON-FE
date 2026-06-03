@@ -7,7 +7,7 @@ import AddEditScheduleModal from "./AddEditScheduleModal.jsx";
 
 const BASE_URL = import.meta.env.VITE_SERVER_DOMAIN;
 
-export default function ScheduleListModal({ date, onClose, onChanged }) {
+export default function ScheduleListModal({ date, onClose, onChanged, onScheduleAdded }) {
   const selectedDate = date ? new Date(date) : new Date();
   const formattedDate = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
   const yyyy = selectedDate.getFullYear();
@@ -144,7 +144,7 @@ export default function ScheduleListModal({ date, onClose, onChanged }) {
           onClose={() => {
             setIsAddModalOpen(false);
             fetchSchedules();
-            onChanged?.();
+            onScheduleAdded?.();
           }}
         />
       )}
