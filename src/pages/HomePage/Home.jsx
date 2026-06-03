@@ -18,6 +18,22 @@ export default function Home() {
     useState(false);
   const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [todayDateSchedules, setTodayDateSchedules] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  const fetchCategories = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(`${BASE_URL}/category/read`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: "include",
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      setCategories(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchTodayDateSchedules = async () => {
     try {
@@ -44,6 +60,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchTodayDateSchedules();
+    fetchCategories();
   }, []);
 
   // 스위치 ON 확인
@@ -203,7 +220,12 @@ export default function Home() {
 
         {isTodayAddableListModalOpen && (
           <TodayAddableListModal
+            schedules={todayDateSchedules}
             onClose={() => setIsTodayAddableListModalOpen(false)}
+            onAdded={() => {
+              setIsTodayAddableListModalOpen(false);
+              fetchTodayDateSchedules();
+            }}
           />
         )}
       </div>
