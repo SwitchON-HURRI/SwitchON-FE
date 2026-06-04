@@ -25,7 +25,6 @@ export default function ManageSchedule() {
 
   // 상태값 수정
   const handleStateSelect = async (condition) => {
-    // 같은 값 선택 시 그냥 닫기
     if (condition === selectedState) {
       setSelectedState(condition);
       return;
@@ -263,9 +262,8 @@ export default function ManageSchedule() {
                 }}
                 onAdded={() => {
                   setIsDetailModalOpen(false);
-                  navigate("/today", {
-                    state: { openSleepModal: true, refreshPlan: true },
-                  });
+                  // /today 페이지로 이동하면 마운트 시점에 알아서 빈 바디로 plan API를 갱신합니다.
+                  navigate("/today");
                 }}
                 onDelete={() => {
                   fetchCategoriesWithSchedules();
