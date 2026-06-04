@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
@@ -46,6 +46,7 @@ export default function CalendarComponent({ onDateClick, refreshKey }) {
   const [categoryMap, setCategoryMap] = useState({});
   const [activeDate, setActiveDate] = useState(new Date());
 
+  // 가공된 이벤트 맵 객체 생성 캐싱
   const eventMap = useMemo(() => {
     const map = {};
     eventData.forEach((ev) => {
@@ -55,54 +56,67 @@ export default function CalendarComponent({ onDateClick, refreshKey }) {
     return map;
   }, [eventData]);
 
-  // 카테고리 fetch
+  // 카테고리 fetch (최초 마운트 시 1회 실행)
   useEffect(() => {
     const fetchCategories = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      const res = await fetch(`${BASE_URL}/category/read`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-      });
-      const data = await res.json();
-      const map = {};
-      data.forEach((c) => {
-        map[c.categoryId] = c.categoryColor;
-      });
-      setCategoryMap(map);
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        const res = await fetch(`${BASE_URL}/category/read`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const map = {};
+        data.forEach((c) => {
+          map[c.categoryId] = c.categoryColor;
+        });
+        setCategoryMap(map);
+      } catch (err) {
+        console.error("카테고리 로드 실패:", err);
+      }
     };
     fetchCategories();
   }, []);
 
-  // 월별 일정 fetch
-  const fetchMonthSchedules = async (date) => {
-    const accessToken = localStorage.getItem("accessToken");
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const startDate = `${y}-${m}-01`;
-    const lastDay = new Date(y, date.getMonth() + 1, 0).getDate();
-    const endDate = `${y}-${m}-${lastDay}`;
+  // useCallback으로 함수 재생성 방지
+  const fetchMonthSchedules = useCallback(async (date, currentCategoryMap) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const startDate = `${y}-${m}-01`;
+      const lastDay = new Date(y, date.getMonth() + 1, 0).getDate();
+      const endDate = `${y}-${m}-${lastDay}`;
 
-    const res = await fetch(
-      `${BASE_URL}/schedule/read/range?startDate=${startDate}&endDate=${endDate}`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        credentials: "include",
-      },
-    );
-    const data = await res.json();
+      const res = await fetch(
+        `${BASE_URL}/schedule/read/range?startDate=${startDate}&endDate=${endDate}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: "include",
+        },
+      );
+      if (!res.ok) return;
+      const data = await res.json();
 
-    const events = data.map((schedule) => ({
-      start: schedule.scheduleDate,
-      end: schedule.scheduleDate,
-      color: categoryMap[schedule.categoryId] ?? "#cccccc",
-    }));
+      const events = data.map((schedule) => ({
+        start: schedule.scheduleDate,
+        end: schedule.scheduleDate,
+        // 인자로 전달받은 최신 맵으로 안전하게 매핑
+        color: currentCategoryMap[schedule.categoryId] ?? "#cccccc",
+      }));
 
-    setEventData(events);
-  };
+      setEventData(events);
+    } catch (err) {
+      console.error("월별 일정 로드 실패:", err);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchMonthSchedules(activeDate);
-  }, [activeDate, refreshKey, categoryMap]);
+    // categoryMap이 비어있지 않거나 로드가 끝난 시점, 혹은 달을 넘겼을 때 안전하게 호출
+    fetchMonthSchedules(activeDate, categoryMap);
+  }, [activeDate, refreshKey, categoryMap, fetchMonthSchedules]);
 
   const handleChange = (date) => {
     setValue(date);

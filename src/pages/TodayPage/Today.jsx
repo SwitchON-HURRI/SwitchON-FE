@@ -26,44 +26,45 @@ export default function Today() {
   const [isTodayAddableListModalOpen, setIsTodayAddableListModalOpen] =
     useState(false);
   const [isReselectMode, setIsReselectMode] = useState(false);
+
   const [planResult, setPlanResult] = useState(null);
   const enrichedBlocks = planResult?.blocks ?? [];
-  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [addableSchedules, setAddableSchedules] = useState([]);
 
-  const reloadPlan = async (sleepTime) => {
+  // 자는 시간 없이 호출하는 공통 plan 재생성 함수
+  const handleReloadPlanWithoutSleepTime = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
+      // 자는 시간(sleepTime)을 body에 실어 보내지 않고 빈 객체로 호출합니다.
       const res = await fetch(`${BASE_URL}/today-schedule/plan`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Content-Type 헤더 누락 방지
+          "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ sleepTime }),
+        body: JSON.stringify({}),
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("plan 생성/재생성 실패");
+      if (!res.ok) throw new Error("plan 재생성 실패");
 
       const planData = await res.json();
       const merged = await mergePlanWithCategories(planData);
 
+      // 응답 데이터 상태에 반영
       setPlanResult(merged);
-      savePlanResult(merged);
-      setIsSleepModalOpen(false);
     } catch (err) {
       console.error(err);
-      alert("일정 배치에 실패했습니다.");
+      alert("일정 재배치에 실패했습니다.");
     }
   };
 
+  // 처음 Home에서 넘어오거나 최초 로드되었을 때 오늘 Plan을 가져옵니다.
   useEffect(() => {
-    if (location.state?.refreshPlan) {
-      setIsSleepModalOpen(true);
-    }
-  }, [location.state]);
+    // 최초 진입 시에도 빈 상태의 plan을 찔러서 현재 상태를 받아오거나 새로고침 처리
+    handleReloadPlanWithoutSleepTime();
+  }, []);
 
   const mergePlanWithCategories = async (planData) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -109,43 +110,8 @@ export default function Today() {
     });
 
     const data = await res.json();
-
     setAddableSchedules(data);
     return data;
-  };
-
-  useEffect(() => {
-    if (location.state?.openSleepModal) {
-      setIsSleepModalOpen(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    const loadPlan = async () => {
-      const saved = getPlanResult();
-      if (!saved) return;
-
-      const merged = await mergePlanWithCategories(saved);
-
-      setPlanResult(merged);
-    };
-
-    loadPlan();
-  }, []);
-
-  const getPlanResult = () => {
-    const saved = localStorage.getItem("planResult");
-    const savedDate = localStorage.getItem("planDate");
-    const today = new Date().toISOString().slice(0, 10);
-    if (saved && savedDate === today) return JSON.parse(saved);
-    return null;
-  };
-
-  const savePlanResult = (planData) => {
-    const today = new Date().toISOString().slice(0, 10);
-
-    localStorage.setItem("planResult", JSON.stringify(planData));
-    localStorage.setItem("planDate", today);
   };
 
   const handleStateReselect = () => {
@@ -154,7 +120,6 @@ export default function Today() {
 
   // 상태값 수정
   const handleStateSelect = async (condition) => {
-    // 같은 값 선택 시 그냥 닫기
     if (condition === selectedState) {
       setSelectedState(condition);
       return;
@@ -185,16 +150,12 @@ export default function Today() {
     const accessToken = localStorage.getItem("accessToken");
 
     const response = await fetch(`${BASE_URL}/category/read`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: { Authorization: `Bearer ${accessToken}` },
       credentials: "include",
     });
 
     if (!response.ok) return;
-
     const data = await response.json();
-
     setCategories(data);
   };
 
@@ -220,20 +181,15 @@ export default function Today() {
       try {
         const accessToken = localStorage.getItem("accessToken");
 
-        // 1. 오늘 일정 reset
         const resetResponse = await fetch(`${BASE_URL}/today-schedule/reset`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
           credentials: "include",
         });
 
-        if (!resetResponse.ok) {
+        if (!resetResponse.ok)
           throw new Error(`reset 실패: ${resetResponse.status}`);
-        }
 
-        // 상태 삭제 (상태값의 유무가 하루의 시작 유무)
         await fetch(`${BASE_URL}/state/delete`, {
           method: "POST",
           headers: {
@@ -243,15 +199,12 @@ export default function Today() {
           body: JSON.stringify({}),
           credentials: "include",
         });
-        localStorage.removeItem("planResult");
-        localStorage.removeItem("planDate");
+
         navigate("/");
       } catch (error) {
         console.error("스위치 종료 실패:", error);
-
         alert("오늘 하루 종료에 실패했습니다.");
       }
-
       return;
     }
 
@@ -270,14 +223,11 @@ export default function Today() {
         const accessToken = localStorage.getItem("accessToken");
         const response = await fetch(`${BASE_URL}/state/read`, {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
           credentials: "include",
         });
 
         if (!response.ok) return;
-
         const data = await response.json();
 
         if (data?.condition) {
@@ -331,6 +281,7 @@ export default function Today() {
             isReselectMode ? setIsReselectMode(false) : handleStateReselect()
           }
         />
+
         <div
           className={styles.ringWrapper}
           style={{
@@ -364,8 +315,8 @@ export default function Today() {
             onClick={() => navigate("/manage-schedule")}
           />
         </div>
+
         <div className={styles.scheduleList}>
-          {/* todaySchedules 대신 enrichedBlocks 사용 */}
           {enrichedBlocks
             .filter((block) => block.blockType === "TASK" && !block.isCompleted)
             .map((block) => (
@@ -395,13 +346,12 @@ export default function Today() {
                     },
                   );
                   if (res.ok) {
-                    // plan 재호출 필요 → sleepModal 띄우기
-                    setIsSleepModalOpen(true);
+                    // 모달을 띄우지 않고 바로 plan API 재요청 후 응답 반영
+                    handleReloadPlanWithoutSleepTime();
                   }
                 }}
                 onComplete={async () => {
                   const accessToken = localStorage.getItem("accessToken");
-
                   const res = await fetch(
                     `${BASE_URL}/today-schedule/complete/${block.todayScheduleId}`,
                     {
@@ -422,8 +372,6 @@ export default function Today() {
                           : b,
                       ),
                     };
-
-                    savePlanResult(updated);
                     return updated;
                   });
                 }}
@@ -433,12 +381,10 @@ export default function Today() {
             className={styles.addScheduleBox}
             onClick={async () => {
               const data = await fetchAddableSchedules();
-
               if (data.length === 0) {
                 alert("담을 일정이 없습니다.");
                 return;
               }
-
               setIsTodayAddableListModalOpen(true);
             }}
           >
@@ -448,24 +394,15 @@ export default function Today() {
             </span>
           </div>
         </div>
+
         {isAddModalOpen && (
-          <AddEditScheduleModal
-            onClose={() => {
-              setIsAddModalOpen(false);
-            }}
-          />
+          <AddEditScheduleModal onClose={() => setIsAddModalOpen(false)} />
         )}
         {confirmModalText && (
           <ConfirmModal
             onClose={handleCloseConfirmModal}
             onConfirm={handleConfirm}
             text={confirmModalText}
-          />
-        )}
-        {isSleepModalOpen && (
-          <SleepTimeModal
-            onClose={() => setIsSleepModalOpen(false)}
-            onConfirm={reloadPlan}
           />
         )}
         {isTodayAddableListModalOpen && (
@@ -475,7 +412,7 @@ export default function Today() {
             onClose={() => setIsTodayAddableListModalOpen(false)}
             onAdded={() => {
               setIsTodayAddableListModalOpen(false);
-              setIsSleepModalOpen(true);
+              handleReloadPlanWithoutSleepTime();
             }}
           />
         )}

@@ -24,7 +24,9 @@ export default function Monthly() {
   const handleScheduleChanged = () => {
     setRefreshKey((prev) => prev + 1);
     setIsModalOpen(false);
-    navigate("/today", { state: { openSleepModal: true } });
+
+    // 이제 /today 페이지 진입 시 자동으로 빈 바디의 plan API를 호출하여 화면을 동기화합니다.
+    navigate("/today");
   };
 
   return (

@@ -105,6 +105,7 @@ export default function Home() {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
+      // 1. 상태(Condition) 생성
       const stateResponse = await fetch(`${BASE_URL}/state/create`, {
         method: "POST",
         headers: {
@@ -118,6 +119,7 @@ export default function Home() {
       if (!stateResponse.ok)
         throw new Error(`state 생성 실패: ${stateResponse.status}`);
 
+      // 2. 오늘 일정 Plan 자동 배치 (처음 1회만 sleepTime 전달)
       const planResponse = await fetch(`${BASE_URL}/today-schedule/plan`, {
         method: "POST",
         headers: {
@@ -133,9 +135,6 @@ export default function Home() {
 
       const planData = await planResponse.json();
       console.log("planData:", planData);
-      const today = new Date().toISOString().slice(0, 10);
-      localStorage.setItem("planResult", JSON.stringify(planData));
-      localStorage.setItem("planDate", today);
 
       setIsSleepModalOpen(false);
       navigate("/today");
